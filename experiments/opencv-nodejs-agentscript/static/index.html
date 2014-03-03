@@ -3,96 +3,106 @@
 <head>
   <title>Shaope detection: Node.js, Socket.IO, OpenCV, Canvas</title>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/foundation/4.2.2/css/foundation.min.css">
-  <link href='http://fonts.googleapis.com/css?family=Offside|Merienda' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel="stylesheet" type="text/css" />
   <meta charset=utf-8>
-  <style type="text/css">
-    body {
-      font-family: "Merienda";
-      background-color: white;
-    }
-    button {
-      font-family: "Offside";
-    }
-    #debug {
-      background: #303030;
-      border-radius: 10px;
-      color: white;
-      font-family: "Offside";
-      font-size: 22px;
-      display: none;
-      padding: 10px;
-      overflow-x: none;
-      overflow-y: auto;
-      height: 200px;
-      word-wrap: break-word;
-    }
-    .footer {
-      height: 128px;
-      color: black;
-    }
-    header {
-      background-color: #2ba6cb;
-      color: white;
-      box-shadow: 0px 2px 2px #004080;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
-      color: white;
-    }
-    h1, h2, h3, h4, h5 {
-      color: #2ba6cb;
-      font-family: "Offside";
-    }
-    header h1, header h2, header h3, header h4, header h5 {
-      color: white;
-      font-family: "Offside";
-      text-shadow: 0px, 5px, 10px black;
-    }
-    #live {
-      display: none;
-    }
-    canvas {
-      padding: 5px;
-      border: solid 5px #2ba6cb;
-      // background-color: #2ba6cb;
-      border-radius: 10px;
-      box-shadow: 0px, 5px, 10px black;
-    }
-  </style>
+  <script src="agentscript.min.js"></script>
+  <script src="coffee-script.js"></script>
+  <script type="text/coffeescript">
+    u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+    class EnergyModel extends ABM.Model
+      setup: ->
+        @patches.importColors "images/map-data.png"
+        @patches.importDrawing "images/map.png"
+
+        villageImg = document.getElementById('village-sprite')
+        windfarmImg = document.getElementById('windfarm-sprite')
+
+        ABM.shapes.add "village", false, (ctx)=>
+          ctx.scale(-1, 1)
+          ctx.rotate Math.PI
+          ctx.drawImage(villageImg, 0, 1)
+        ABM.shapes.add "windfarm", false, (ctx)=>
+          ctx.scale(-1, 1)
+          ctx.rotate Math.PI
+          ctx.drawImage(windfarmImg, -50, -80)
+
+        @agentBreeds "villages windfarms"
+
+        @villages.setDefault "shape", "village"
+        @villages.setDefault "heading", 0
+        @villages.setDefault "size", 1
+        @windfarms.setDefault "shape", "windfarm"
+        @windfarms.setDefault "heading", 0
+        @windfarms.setDefault "size", 1
+
+      recompute: true
+      power: 0
+
+      setLocations: (breed, locs) ->
+        @recompute = true
+        for {x, y}, i in locs
+          if (i < @[breed].length)
+            @[breed][i].moveTo @patches.patchXY(x,y)
+          else
+            @[breed].create 1, (a)=>
+              a.moveTo @patches.patchXY(x,y)
+
+      step: ->
+        if @recompute
+          _power = 0
+          for farm in @windfarms
+            if farm.p.color[2] > 50 then continue             # ocean
+            _power = (255 - farm.p.color[0]) + 45             # the redder, the less wind
+          @power = _power / 10
+          console.log @power
+          @recompute = false
+
+    # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
+    #   Defaults: 13, -16, 16, -16, 16, false, true
+    model = new EnergyModel "layers", 1, 0, 700, 0, 700
+    model.debug() # Debug: Put Model vars in global name space
+    model.start() # Run model immediately after startup initialization
+  </script>
 </head>
 <body>
-  <div class="page-wrap">    
+  <div class="page-wrap">
     <header>
-      <div class="row">      
-        <div class="large-8 columns">
-          <h1>OpenCV Testing</h1>
-        </div>
+      <div class="row">
+        <h1>Learning Everywhere Experiments</h1>
       </div>
     </header>
+    <div id="sprites">
+      <img id="windfarm-sprite" src="images/windfarm.png" />
+      <img id="village-sprite" src="images/village.png" />
+    </div>
     <div class="row">
-      <div class="large-5 columns">
-        <video id="live" width="320" height="240" autoplay></video>
-        <canvas id="canvas" width="320" height="240" style></canvas>
-        <br>
-      </div>
-      <div class="large-7 columns">
-        <canvas id="canvas2" width="320" height="240"></canvas>
-        <br>
-        <button id="debugBtn" class="round success">Open Debug</button>
-      </div>
+      <div id="layers"></div>
+      <canvas id="canvas2" width="320" height="240"></canvas>
+      <button id="debugBtn" class="round success">Open Debug</button>
     </div>
   </div>
   <div class="row">
     <div class="large-12 columns">
       <pre id="debug">
-      </pre>      
+      </pre>
     </div>
   </div>
   <div class="footer">
-    <div class="row">      
+    <div class="row">
       <div class="large-12 columns">
       </div>
     </div>
   </div>
+
+  <div id="results">
+    City Electrical Needs Met:<br/>
+    <img id="chart-needs" src="https://chart.googleapis.com/chart?chs=225x125&cht=gom&chd=t:0" /><br/>
+    Power Generated:<br/>
+    <img id="chart-needs" src="https://chart.googleapis.com/chart?chs=225x125&cht=gom&chd=t:0&chl=0+MW" /><br/>
+  </div>
+
+  <video id="live" width="320" height="240" style="display: none;" autoplay></video>
+  <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/shapes-client.js"></script>
 </body>
