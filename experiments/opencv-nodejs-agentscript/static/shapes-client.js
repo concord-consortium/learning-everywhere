@@ -58,6 +58,8 @@ function captureAndDraw () {
     ctx2.drawImage(video, 0, 0, 320, 240);
     ctx2.translate(320, 0);
     ctx2.scale(-1, 1);
+    var squares = [];
+    var triangles = [];
     if (contours && contours.length) {
       for (var i in contours) {
         var points = contours[i];
@@ -65,21 +67,41 @@ function captureAndDraw () {
         if (points && points.length) {
           ctx2.beginPath();
           ctx2.moveTo(points[0].x, points[0].y);
+          xTot = points[0].x;
+          yTot = points[0].y;
           for (var p = 1; p < points.length; p++) {
             ctx2.lineTo(points[p].x, points[p].y);
+            xTot += points[p].x;
+            yTot += points[p].y;
           }
           ctx2.closePath();
-          ctx2.lineWidth = 2;
+
+          // simple center-of-mass
+          x = xTot / points.length;
+          y = yTot / points.length;
+
           if (points.length == 4) {
             ctx2.strokeStyle = "#a22";
+            squares.push({x: x, y: y});
           } else if (points.length == 3) {
             ctx2.strokeStyle = "#2a2";
+            triangles.push({x: x, y: y});
           } else {
             ctx2.strokeStyle = "#2ba6cb";
           }
           ctx2.stroke();
+
+          ctx2.beginPath();
+          ctx2.arc(x,y,4,0,2*Math.PI);
+          ctx2.closePath();
+
+          ctx2.lineWidth = 2;
+          ctx2.stroke();
         }
       }
+    }
+    if (window.receiveShapes) {
+      window.receiveShapes(squares, triangles);
     }
     socket.emit('frame', canvas.toDataURL("image/jpeg"));
   }, 1000 / fps);

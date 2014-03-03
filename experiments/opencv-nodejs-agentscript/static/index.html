@@ -62,6 +62,17 @@
     model = new EnergyModel "layers", 1, 0, 700, 0, 700
     model.debug() # Debug: Put Model vars in global name space
     model.start() # Run model immediately after startup initialization
+
+    window.receiveShapes = (squares, triangles) ->
+      scale = 700/240
+      for point in squares
+        point.x = Math.floor point.x * scale
+        point.y = Math.floor point.y * scale
+      for point in triangles
+        point.x = Math.floor point.x * scale
+        point.y = Math.floor point.y * scale
+      model.setLocations "villages", squares
+      model.setLocations "windfarms", triangles
   </script>
 </head>
 <body>
