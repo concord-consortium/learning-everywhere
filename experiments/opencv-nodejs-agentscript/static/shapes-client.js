@@ -47,10 +47,17 @@ socket.on('shapes', function (_shapes) {
   console.log("Disconnected!!!", data);
 });
 
-function captureAndDraw () {      
+function captureAndDraw () {
+  ctx.translate(320, 0);
+  ctx.scale(-1, 1);
   mainTimer = setInterval(function () {
     ctx.drawImage(video, 0, 0, 320, 240);
+
+    ctx2.translate(320, 0);
+    ctx2.scale(-1, 1);
     ctx2.drawImage(video, 0, 0, 320, 240);
+    ctx2.translate(320, 0);
+    ctx2.scale(-1, 1);
     if (contours && contours.length) {
       for (var i in contours) {
         var points = contours[i];
