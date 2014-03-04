@@ -1,11 +1,6 @@
 cv = require('opencv')
 fs = require('fs')
 
-lowThresh = 0
-highThresh = 100
-nIters = 2
-minArea = 500
-
 app = require('http').createServer (req, res) ->
   file = if req.url is '/' then '/index.html' else req.url
   console.log "#{req.method} #{file}"
@@ -17,26 +12,50 @@ app = require('http').createServer (req, res) ->
     res.end data
 
 io = require('socket.io').listen(app).on 'connection', (socket) ->
-  socket.on 'frame', (data) ->
+  socket.on 'frame', ({data, useCanny, lowThresh, highThresh, nIters, minArea, maxArea,
+      approxPolygons, useHSV, lowerHSV, upperHSV, convex, dilate}) ->
     return unless typeof(data) is 'string'
     data = data?.split(',')?[1]
+
+    useCanny    ?= true
+    lowThresh   ?= 0
+    highThresh  ?= 100
+    nIters      ?= 2
+    minArea     ?= 500
+    maxArea     ?= Infinity
+    approxPolygons ?= false
+    lowerHSV    ?= [170, 100, 0]
+    upperHSV    ?= [180, 255, 255]
+    dilate      ?= true
+
     # feed the data into OpenCV
     cv.readImage (new Buffer data, 'base64'), (err, im) ->
 
-      im.convertGrayscale()         # for now, use grayScale. When we start dealing with colors, conv. to HSV       
-      im_canny = im.copy()
+      im.convertHSVscale()
 
-      im_canny.canny(lowThresh, highThresh)
-      im_canny.dilate(nIters)
+      if useHSV
+        im.inRange(lowerHSV, upperHSV)    # filter colors
 
-      contours = im_canny.findContours()
+      if useCanny
+        im.canny(lowThresh, highThresh)
+
+      if dilate
+        im.dilate(nIters)
+
+
+      contours = im.findContours()
 
       data = {contours: [], size: contours.size()}
       for c in [0...contours.size()]
-        if contours.area(c) < minArea then continue
+        if convex
+          contours.convexHull(c, true)
 
-        arcLength = contours.arcLength(c, true)             # turn the contours into very low-res polygons
-        contours.approxPolyDP(c, 0.1 * arcLength, true)     # to more easily distinguish squares and triangles
+        area = contours.area(c)
+        if area < minArea or area > maxArea then continue
+
+        if approxPolygons
+          arcLength = contours.arcLength(c, true)             # turn the contours into very low-res polygons
+          contours.approxPolyDP(c, 0.1 * arcLength, true)     # to more easily distinguish squares and triangles
 
         data.contours[c] = []
         for i in [0...contours.cornerCount(c)]
@@ -59,9 +78,9 @@ io.set('transports', [
   'xhr-polling'
   'jsonp-polling'
 ])
-      
+
 app.listen(9999)
 
 process.on 'uncaughtException', (err) ->
   console.error(err)
-  socket?.emit('shapes', []) 
+  socket?.emit('shapes', [])

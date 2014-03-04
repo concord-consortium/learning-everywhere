@@ -8,7 +8,23 @@ var video = document.querySelector('#live'),
     contours = [],
 
     debug = document.querySelector('#debug'),
-    debugBtn = document.querySelector('#debugBtn');
+    debugBtn = document.querySelector('#debugBtn'),
+
+    // these values are for a light blue square
+    // these were found using
+    // https://github.com/concord-consortium/video-processing-experiments/tree/master/opencv-nodejs-browser/user-calibration
+    // eventually there will be a calibration mode here as well
+    useCanny    = false,
+    lowThresh   = 0,
+    highThresh  = 100,
+    useHSV      = true,
+    lowerHSV    = [75, 76, 92],
+    upperHSV    = [110, 178, 238],
+    dilate      = true,
+    convex      = true,
+    minArea     = 4000,
+    maxArea     = 13200,
+    approxPolygons = true;
 
 navigator.getMedia = (navigator.getUserMedia ||
                        navigator.webkitGetUserMedia ||
@@ -103,7 +119,21 @@ function captureAndDraw () {
     if (window.receiveShapes) {
       window.receiveShapes(squares, triangles);
     }
-    socket.emit('frame', canvas.toDataURL("image/jpeg"));
+    socket.emit('frame',
+      {
+          data: canvas.toDataURL("image/jpeg"),
+          useCanny:   useCanny,
+          useHSV:     useHSV,
+          lowThresh:  lowThresh,
+          highThresh: highThresh,
+          lowerHSV:   lowerHSV,
+          upperHSV:   upperHSV,
+          dilate:     dilate,
+          convex:     convex,
+          minArea:    minArea,
+          maxArea:    maxArea,
+          approxPolygons: approxPolygons
+        });
   }, 1000 / fps);
 }
 captureAndDraw();
