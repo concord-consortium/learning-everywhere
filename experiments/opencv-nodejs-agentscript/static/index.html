@@ -18,11 +18,11 @@
         windfarmImg = document.getElementById('windfarm-sprite')
 
         ABM.shapes.add "village", false, (ctx)=>
-          ctx.scale(-1, 1)
+          ctx.scale(-(1/7), (1/7))
           ctx.rotate Math.PI
           ctx.drawImage(villageImg, 0, 1)
         ABM.shapes.add "windfarm", false, (ctx)=>
-          ctx.scale(-1, 1)
+          ctx.scale(-(1/7), (1/7))
           ctx.rotate Math.PI
           ctx.drawImage(windfarmImg, -50, -80)
 
@@ -35,11 +35,11 @@
         @windfarms.setDefault "heading", 0
         @windfarms.setDefault "size", 1
 
-      recompute: true
+      recompute: false
       power: 0
 
       setLocations: (breed, locs) ->
-        @recompute = true
+        if locs.length then @recompute = true
         for {x, y}, i in locs
           if (i < @[breed].length)
             @[breed][i].moveTo @patches.patchXY(x,y)
@@ -52,25 +52,36 @@
           _power = 0
           for farm in @windfarms
             if farm.p.color[2] > 50 then continue             # ocean
-            _power = (255 - farm.p.color[0]) + 45             # the redder, the less wind
+            _power += (255 - farm.p.color[0]) + 45             # the redder, the less wind
           @power = _power / 10
+          showPowerGenerated @power
           console.log @power
           @recompute = false
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
     #   Defaults: 13, -16, 16, -16, 16, false, true
-    model = new EnergyModel "layers", 1, 0, 700, 0, 700
+    model = new EnergyModel "layers", 7, 0, 100, 0, 100
+    window.model = model
     model.debug() # Debug: Put Model vars in global name space
     model.start() # Run model immediately after startup initialization
 
+    showPowerGenerated = (power) ->
+      left = 10 + (power/40 * 180)      # scale power: 0-40MW = 10-190px
+      left = Math.min left, 190
+      document.querySelectorAll('#generated .cover')[0].style.left = left+'px'
+
+      left = 1 + (power/40 * 177)
+      left = Math.min left, 178
+      document.querySelectorAll('#generated .arrow')[0].style.left = left+'px'
+
     window.receiveShapes = (squares, triangles) ->
-      scale = 700/240
+      scale = 100/240
       for point in squares
         point.x = Math.floor point.x * scale
-        point.y = Math.floor point.y * scale
+        point.y = 100 - Math.floor point.y * scale
       for point in triangles
         point.x = Math.floor point.x * scale
-        point.y = Math.floor point.y * scale
+        point.y = 100 - Math.floor point.y * scale
       model.setLocations "villages", squares
       model.setLocations "windfarms", triangles
   </script>
@@ -106,10 +117,20 @@
   </div>
 
   <div id="results">
-    City Electrical Needs Met:<br/>
-    <img id="chart-needs" src="https://chart.googleapis.com/chart?chs=225x125&cht=gom&chd=t:0" /><br/>
-    Power Generated:<br/>
-    <img id="chart-needs" src="https://chart.googleapis.com/chart?chs=225x125&cht=gom&chd=t:0&chl=0+MW" /><br/>
+    <div>
+      City Electrical Needs Met:<br/>
+      <div id="needs">
+        <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
+        <span class="left">0 MW</span><span class="right">40 MW</span>
+      </div>
+    </div>
+    <div>
+      Power Generated:<br/>
+      <div id="generated">
+        <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
+        <span class="left">0 MW</span><span class="right">40 MW</span>
+      </div>
+    </div>
   </div>
 
   <video id="live" width="320" height="240" style="display: none;" autoplay></video>

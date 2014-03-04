@@ -66,3 +66,43 @@ canvas {
 #results {
   margin-left: 17px;
 }
+#results > div {
+  clear: both;
+  padding-bottom: 50px;
+}
+.scale {
+  position: relative;
+  margin: 13px;
+  border-radius: 20px;
+  height: 24px;
+  width: 190px;
+  background: #ff3232;
+  background: -moz-linear-gradient(left,  #ff3232 0%, #edf72e 50%, #2aff00 100%);
+  background: -webkit-gradient(linear, left top, right top, color-stop(0%,#ff3232), color-stop(50%,#edf72e), color-stop(100%,#2aff00));
+  background: -webkit-linear-gradient(left,  #ff3232 0%,#edf72e 50%,#2aff00 100%);
+  background: -o-linear-gradient(left,  #ff3232 0%,#edf72e 50%,#2aff00 100%);
+  background: -ms-linear-gradient(left,  #ff3232 0%,#edf72e 50%,#2aff00 100%);
+  background: linear-gradient(to right,  #ff3232 0%,#edf72e 50%,#2aff00 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff3232', endColorstr='#2aff00',GradientType=0 );
+}
+.scale .cover {
+  position: absolute;
+  left: 10px;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  opacity: 0.85;
+}
+.scale .arrow {
+  position: absolute;
+  left: 1px;
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 24px solid #336D67;
+  border-radius: 16px;
+}
+#needs, #generated {
+  width: 221px;
+}
