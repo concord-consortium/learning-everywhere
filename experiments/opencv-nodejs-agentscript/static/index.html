@@ -88,7 +88,6 @@
             group.power = 0
             for farm in group.windfarms
               group.power += farm.power
-            console.log "Group power: "+group.power
             if group.villages.length > 0
               showPower group.power, "needs"
 
@@ -111,27 +110,25 @@
       left = Math.min left, 178
       document.querySelectorAll("##{type} .arrow")[0].style.left = left+'px'
 
-    window.receiveShapes = (squares, triangles) ->
+    window.receiveData = (windfarms, villages, powerlines) ->
       scale = 100/240
-      for point in squares
+      for point in windfarms
         point.x = Math.floor point.x * scale
         point.y = 100 - Math.floor point.y * scale
-      for point in triangles
-        point.x = Math.floor point.x * scale
-        point.y = 100 - Math.floor point.y * scale
-      model.setLocations "villages", squares
-      model.setLocations "windfarms", triangles
+      model.setLocations "windfarms", windfarms
 
-    window.clearPowerlines = ->
+      for point in villages
+        point.x = Math.floor point.x * scale
+        point.y = 100 - Math.floor point.y * scale
+      model.setLocations "villages", villages
+
       model.clearPowerlines()
-
-    window.receivePowerline = (path) ->
-      scale = 100/240
-      for point in path
-        point.x = Math.floor point.x * scale
-        point.y = 100 - Math.floor point.y * scale
-
-      model.addPowerLineGroup path
+      for powerline in powerlines
+        if powerline
+          for point in powerline
+            point.x = Math.floor point.x * scale
+            point.y = 100 - Math.floor point.y * scale
+          model.addPowerLineGroup powerline
   </script>
 </head>
 <body>

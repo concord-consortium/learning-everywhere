@@ -5,26 +5,54 @@ var video = document.querySelector('#live'),
     ctx = canvas.getContext('2d'),
     ctx2 = canvas2.getContext('2d'),
     mainTimer,
-    contours = [],
+    contours = {},
 
     debug = document.querySelector('#debug'),
     debugBtn = document.querySelector('#debugBtn'),
 
-    // these values are for a light blue square
-    // these were found using
-    // https://github.com/concord-consortium/video-processing-experiments/tree/master/opencv-nodejs-browser/user-calibration
-    // eventually there will be a calibration mode here as well
-    useCanny    = false,
-    lowThresh   = 0,
-    highThresh  = 100,
-    useHSV      = true,
-    lowerHSV    = [160, 100, 0],
-    upperHSV    = [180, 255, 255],
-    dilate      = true,
-    convex      = false,
-    minArea     = 500,
-    maxArea     = Infinity,
-    approxPolygons = false;
+    calibrations = {
+      windfarm: {
+        useCanny    : false,
+        lowThresh   : 0,
+        highThresh  : 100,
+        useHSV      : true,
+        lowerHSV    : [82, 100, 84],
+        upperHSV    : [121, 255, 255],
+        dilate      : true,
+        convex      : true,
+        minArea     : 150,
+        maxArea     : 1500,
+        approxPolygons : true,
+        corners     : 4
+      },
+      village: {
+        useCanny    : false,
+        lowThresh   : 0,
+        highThresh  : 100,
+        useHSV      : true,
+        lowerHSV    : [82, 100, 84],
+        upperHSV    : [121, 255, 255],
+        dilate      : true,
+        convex      : true,
+        minArea     : 150,
+        maxArea     : 1500,
+        approxPolygons : true,
+        corners     : 3
+      },
+      powerline: {
+        useCanny    : false,
+        lowThresh   : 0,
+        highThresh  : 100,
+        useHSV      : true,
+        lowerHSV    : [141, 124, 125],
+        upperHSV    : [180, 255, 255],
+        dilate      : true,
+        convex      : false,
+        minArea     : 0,
+        maxArea     : 1500,
+        approxPolygons : false
+      }
+    };
 
 navigator.getMedia = (navigator.getUserMedia ||
                        navigator.webkitGetUserMedia ||
@@ -49,14 +77,14 @@ debugBtn.onclick = function (e) {
 }
 
 var socket = io.connect(top.location.origin); // 'http://localhost');
-socket.on('shapes', function (_shapes) {
+socket.on('shapes', function (_data) {
   // console.log(_shapes)
-  if (!_shapes || _shapes.length === 0) {
+  if (!_data) {
     return;
   }
-  contours = _shapes.contours;
+  contours = _data;
   if (debugBtn.className == 'round alert') {
-    debug.innerHTML = JSON.stringify({size: _shapes.size, data: contours});
+    debug.innerHTML = JSON.stringify(contours);
   }
 
 }).on('disconnect', function (data) {
@@ -74,12 +102,12 @@ function captureAndDraw () {
     ctx2.drawImage(video, 0, 0, 320, 240);
     ctx2.translate(320, 0);
     ctx2.scale(-1, 1);
-    var squares = [],
-        triangles = [],
-        path = [];
-    if (contours && contours.length) {
-      for (var i in contours) {
-        var points = contours[i];
+    var windfarms = [],
+        villages = [],
+        powerlines = [];
+    for (type in contours) {
+      for (i in contours[type]) {
+        var points = contours[type][i];
 
         if (points && points.length) {
           ctx2.beginPath();
@@ -97,16 +125,16 @@ function captureAndDraw () {
           x = xTot / points.length;
           y = yTot / points.length;
 
-          if (points.length == 4) {
+          if (type == "windfarm") {
             ctx2.strokeStyle = "#a22";
-            squares.push({x: x, y: y});
-          } else if (points.length == 3) {
+            windfarms.push({x: x, y: y});
+          } else if (type == "village") {
             ctx2.strokeStyle = "#2a2";
-            triangles.push({x: x, y: y});
+            villages.push({x: x, y: y});
           } else {
-            if (!path[i]) path[i] = [];
+            if (!powerlines[i]) powerlines[i] = [];
             for (var p = 0; p < points.length; p++) {
-              path[i].push({x: points[p].x, y: points[p].y})
+              powerlines[i].push({x: points[p].x, y: points[p].y})
             }
             ctx2.strokeStyle = "#2ba6cb";
           }
@@ -121,30 +149,10 @@ function captureAndDraw () {
         }
       }
     }
-    if (window.receiveShapes) {
-      //window.receiveShapes(squares, triangles);
-      window.clearPowerlines();
-      for (var i = 0, ii = path.length; i < ii; i++ ) {
-        if (path[i]) {
-          window.receivePowerline(path[i]);
-        }
-      }
+    if (window.receiveData) {
+      window.receiveData(windfarms, villages, powerlines);
     }
-    socket.emit('frame',
-      {
-          data: canvas.toDataURL("image/jpeg"),
-          useCanny:   useCanny,
-          useHSV:     useHSV,
-          lowThresh:  lowThresh,
-          highThresh: highThresh,
-          lowerHSV:   lowerHSV,
-          upperHSV:   upperHSV,
-          dilate:     dilate,
-          convex:     convex,
-          minArea:    minArea,
-          maxArea:    maxArea,
-          approxPolygons: approxPolygons
-        });
+    socket.emit('frame', {data: canvas.toDataURL("image/jpeg"), calibrations: calibrations});
   }, 1000 / fps);
 }
 captureAndDraw();

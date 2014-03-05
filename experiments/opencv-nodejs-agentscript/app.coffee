@@ -12,55 +12,65 @@ app = require('http').createServer (req, res) ->
     res.end data
 
 io = require('socket.io').listen(app).on 'connection', (socket) ->
-  socket.on 'frame', ({data, useCanny, lowThresh, highThresh, nIters, minArea, maxArea,
-      approxPolygons, useHSV, lowerHSV, upperHSV, convex, dilate}) ->
+  socket.on 'frame', ({data, calibrations}) ->
     return unless typeof(data) is 'string'
     data = data?.split(',')?[1]
 
-    useCanny    ?= true
-    lowThresh   ?= 0
-    highThresh  ?= 100
-    nIters      ?= 2
-    minArea     ?= 500
-    maxArea     ?= Infinity
-    approxPolygons ?= false
-    lowerHSV    ?= [170, 100, 0]
-    upperHSV    ?= [180, 255, 255]
-    dilate      ?= true
-
     # feed the data into OpenCV
-    cv.readImage (new Buffer data, 'base64'), (err, im) ->
+    cv.readImage (new Buffer data, 'base64'), (err, _im) ->
 
-      im.convertHSVscale()
+      data = {}
 
-      if useHSV
-        im.inRange(lowerHSV, upperHSV)    # filter colors
+      for name, calibration of calibrations
 
-      if useCanny
-        im.canny(lowThresh, highThresh)
+        useHSV      = calibration.useHSV      ? false
+        useCanny    = calibration.useCanny    ? true
+        lowThresh   = calibration.lowThresh   ? 0
+        highThresh  = calibration.highThresh  ? 100
+        nIters      = calibration.nIters      ? 2
+        minArea     = calibration.minArea     ? 500
+        maxArea     = calibration.maxArea     ? Infinity
+        approxPolygons = calibration.approxPolygons   ? false
+        lowerHSV    = calibration.lowerHSV    ? [170, 100, 0]
+        upperHSV    = calibration.upperHSV    ? [180, 255, 255]
+        dilate      = calibration.dilate      ? true
+        convex      = calibration.convext     ? false
+        corners     = calibration.corners     ? 4
 
-      if dilate
-        im.dilate(nIters)
+        im = _im.copy();
 
+        if useHSV
+          im.convertHSVscale()
+          im.inRange(lowerHSV, upperHSV)    # filter colors
 
-      contours = im.findContours()
+        if useCanny
+          im.convertGrayscale() unless useHSV
+          im.canny(lowThresh, highThresh)
 
-      data = {contours: [], size: contours.size()}
-      for c in [0...contours.size()]
-        if convex
-          contours.convexHull(c, true)
+        if dilate
+          im.dilate(nIters)
 
-        area = contours.area(c)
-        if area < minArea or area > maxArea then continue
+        contours = im.findContours()
 
-        if approxPolygons
-          arcLength = contours.arcLength(c, true)             # turn the contours into very low-res polygons
-          contours.approxPolyDP(c, 0.1 * arcLength, true)     # to more easily distinguish squares and triangles
+        data[name] = []
+        for c in [0...contours.size()]
+          if convex
+            contours.convexHull(c, true)
 
-        data.contours[c] = []
-        for i in [0...contours.cornerCount(c)]
-          point = contours.point(c, i)
-          data.contours[c][i] = {x: point.x, y: point.y}
+          area = contours.area(c)
+          if area < minArea or area > maxArea then continue
+
+          if approxPolygons
+            arcLength = contours.arcLength(c, true)
+            contours.approxPolyDP(c, 0.1 * arcLength, true)
+            if contours.cornerCount(c) != corners           # if we're approximating polygons, don't send any
+              continue                                      # back unless they have the right number of corners
+
+          data[name].push []
+          index = data[name].length - 1
+          for i in [0...contours.cornerCount(c)]
+            point = contours.point(c, i)
+            data[name][index][i] = {x: point.x, y: point.y}
 
       socket.volatile.emit('shapes', data)
 
