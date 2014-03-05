@@ -55,6 +55,16 @@ canvas {
   position: absolute;
   left: 1000px;
 }
+#saveBtn {
+  position: absolute;
+  left: 1000px;
+  top: 695px;
+}
+#saveUrl {
+  position: absolute;
+  left: 1150px;
+  top: 710px;
+}
 #debugBtn {
   position: absolute;
   left: 1000px;

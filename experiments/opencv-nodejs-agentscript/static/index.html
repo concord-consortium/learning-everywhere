@@ -114,6 +114,7 @@
       document.querySelectorAll("##{type} .arrow")[0].style.left = left+'px'
 
     window.receiveData = (windfarms, villages, powerlines) ->
+      return if top.location.hash
       scale = 100/240
       for point in windfarms
         point.x = Math.floor point.x * scale
@@ -132,6 +133,34 @@
             point.x = Math.floor point.x * scale
             point.y = 100 - Math.floor point.y * scale
           model.addPowerLineGroup powerline
+
+    window.serializeModel = ->
+      json = {windfarms: [], villages: [], powerlines: []}
+      for farm in model.windfarms
+        json.windfarms.push {x: farm.x, y: farm.y}
+      for village in model.villages
+        json.villages.push {x: village.x, y: village.y}
+      ###
+      for pole in model.poles         # we cant save pole data with this simplistic approach to urls
+        group = pole.group
+        if !json.powerlines[group] then json.powerlines[group] = []
+        json.powerlines[group].push {x: pole.x, y: pole.y}
+      ###
+      JSON.stringify json
+
+    window.saveModelURL = ->
+      json = window.serializeModel()
+      encoded = window.btoa json
+      url = top.location.origin + "#" + encoded
+      document.getElementById("saveUrl").innerHTML = "<a href='#{url}'>Link</a>"
+
+    if top.location.hash
+      hash = top.location.hash.slice(1)
+      if hash.length
+        modelData = JSON.parse(window.atob(hash))
+        model.setLocations "windfarms", modelData.windfarms
+        model.setLocations "villages", modelData.villages
+
   </script>
 </head>
 <body>
@@ -148,7 +177,9 @@
     <div class="row">
       <div id="layers"></div>
       <canvas id="canvas2" width="320" height="240"></canvas>
+      <button id="saveBtn" class="round success" onclick="saveModelURL()">Save Model</button>
       <button id="debugBtn" class="round success">Open Debug</button>
+      <div id="saveUrl"></div>
     </div>
   </div>
   <div class="row">
