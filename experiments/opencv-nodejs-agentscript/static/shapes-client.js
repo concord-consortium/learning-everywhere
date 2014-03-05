@@ -18,13 +18,13 @@ var video = document.querySelector('#live'),
     lowThresh   = 0,
     highThresh  = 100,
     useHSV      = true,
-    lowerHSV    = [75, 76, 92],
-    upperHSV    = [110, 178, 238],
+    lowerHSV    = [160, 100, 0],
+    upperHSV    = [180, 255, 255],
     dilate      = true,
-    convex      = true,
-    minArea     = 4000,
-    maxArea     = 13200,
-    approxPolygons = true;
+    convex      = false,
+    minArea     = 500,
+    maxArea     = Infinity,
+    approxPolygons = false;
 
 navigator.getMedia = (navigator.getUserMedia ||
                        navigator.webkitGetUserMedia ||
@@ -74,8 +74,9 @@ function captureAndDraw () {
     ctx2.drawImage(video, 0, 0, 320, 240);
     ctx2.translate(320, 0);
     ctx2.scale(-1, 1);
-    var squares = [];
-    var triangles = [];
+    var squares = [],
+        triangles = [],
+        path = [];
     if (contours && contours.length) {
       for (var i in contours) {
         var points = contours[i];
@@ -103,6 +104,10 @@ function captureAndDraw () {
             ctx2.strokeStyle = "#2a2";
             triangles.push({x: x, y: y});
           } else {
+            if (!path[i]) path[i] = [];
+            for (var p = 0; p < points.length; p++) {
+              path[i].push({x: points[p].x, y: points[p].y})
+            }
             ctx2.strokeStyle = "#2ba6cb";
           }
           ctx2.stroke();
@@ -117,7 +122,13 @@ function captureAndDraw () {
       }
     }
     if (window.receiveShapes) {
-      window.receiveShapes(squares, triangles);
+      //window.receiveShapes(squares, triangles);
+      window.clearPowerlines();
+      for (var i = 0, ii = path.length; i < ii; i++ ) {
+        if (path[i]) {
+          window.receivePowerline(path[i]);
+        }
+      }
     }
     socket.emit('frame',
       {

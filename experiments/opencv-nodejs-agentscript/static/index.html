@@ -20,13 +20,13 @@
         ABM.shapes.add "village", false, (ctx)=>
           ctx.scale(-(1/7), (1/7))
           ctx.rotate Math.PI
-          ctx.drawImage(villageImg, 0, 1)
+          ctx.drawImage(villageImg, -30, -50)
         ABM.shapes.add "windfarm", false, (ctx)=>
           ctx.scale(-(1/7), (1/7))
           ctx.rotate Math.PI
           ctx.drawImage(windfarmImg, -50, -80)
 
-        @agentBreeds "villages windfarms"
+        @agentBreeds "villages windfarms poles"
 
         @villages.setDefault "shape", "village"
         @villages.setDefault "heading", 0
@@ -34,6 +34,12 @@
         @windfarms.setDefault "shape", "windfarm"
         @windfarms.setDefault "heading", 0
         @windfarms.setDefault "size", 1
+
+        @poles.setDefault "shape", "circle"
+        @poles.setDefault "color", [0,0,0]
+        @poles.setDefault "size", 0.3
+
+        @powerGroups = []
 
       recompute: false
       power: 0
@@ -47,15 +53,46 @@
             @[breed].create 1, (a)=>
               a.moveTo @patches.patchXY(x,y)
 
+      addPowerLineGroup: (poles) ->
+        @powerGroups.push {villages: [], windfarms: []}
+        group = @powerGroups.length-1
+        for p in poles
+          @addPowerLinePole p
+          for v in @villages
+            if !~@powerGroups[group].villages.indexOf v
+              @powerGroups[group].villages.push(v) if v.distance(p) < 6
+          for w in @windfarms
+            if !~@powerGroups[group].windfarms.indexOf w
+              @powerGroups[group].windfarms.push(w) if w.distance(p) < 6
+
+      addPowerLinePole: ({x, y}) ->
+        @poles.create 1, (a)=>
+          a.moveTo @patches.patchXY(x,y)
+
+      clearPowerlines: ->
+        @powerGroups = []
+        for p in @poles by -1
+          p.die()
+
       step: ->
         if @recompute
           _power = 0
           for farm in @windfarms
-            if farm.p.color[2] > 50 then continue             # ocean
-            _power += (255 - farm.p.color[0]) + 45             # the redder, the less wind
-          @power = _power / 10
-          showPowerGenerated @power
-          console.log @power
+            if farm.p.color[2] > 50 then farm.power = 0             # ocean
+            else farm.power = ((255 - farm.p.color[0]) + 45) / 10   # the redder, the less wind
+            _power += farm.power
+          @power = _power
+          showPower @power, "generated"
+
+          for group in @powerGroups
+            group.power = 0
+            for farm in group.windfarms
+              group.power += farm.power
+            console.log "Group power: "+group.power
+            if group.villages.length > 0
+              showPower group.power, "needs"
+
+
           @recompute = false
 
     # div, patchSize, minX, maxX, minY, maxY, isTorus, hasNeighbors
@@ -65,14 +102,14 @@
     model.debug() # Debug: Put Model vars in global name space
     model.start() # Run model immediately after startup initialization
 
-    showPowerGenerated = (power) ->
+    showPower = (power, type) ->
       left = 10 + (power/40 * 180)      # scale power: 0-40MW = 10-190px
       left = Math.min left, 190
-      document.querySelectorAll('#generated .cover')[0].style.left = left+'px'
+      document.querySelectorAll("##{type} .cover")[0].style.left = left+'px'
 
       left = 1 + (power/40 * 177)
       left = Math.min left, 178
-      document.querySelectorAll('#generated .arrow')[0].style.left = left+'px'
+      document.querySelectorAll("##{type} .arrow")[0].style.left = left+'px'
 
     window.receiveShapes = (squares, triangles) ->
       scale = 100/240
@@ -84,6 +121,17 @@
         point.y = 100 - Math.floor point.y * scale
       model.setLocations "villages", squares
       model.setLocations "windfarms", triangles
+
+    window.clearPowerlines = ->
+      model.clearPowerlines()
+
+    window.receivePowerline = (path) ->
+      scale = 100/240
+      for point in path
+        point.x = Math.floor point.x * scale
+        point.y = 100 - Math.floor point.y * scale
+
+      model.addPowerLineGroup path
   </script>
 </head>
 <body>
