@@ -52,6 +52,8 @@
           else
             @[breed].create 1, (a)=>
               a.moveTo @patches.patchXY(x,y)
+        while locs.length < @[breed].length
+          @[breed].last().die()
 
       addPowerLineGroup: (poles) ->
         @powerGroups.push {villages: [], windfarms: []}
@@ -60,10 +62,10 @@
           @addPowerLinePole p
           for v in @villages
             if !~@powerGroups[group].villages.indexOf v
-              @powerGroups[group].villages.push(v) if v.distance(p) < 6
+              @powerGroups[group].villages.push(v) if v.distance(p) < 8
           for w in @windfarms
             if !~@powerGroups[group].windfarms.indexOf w
-              @powerGroups[group].windfarms.push(w) if w.distance(p) < 6
+              @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
 
       addPowerLinePole: ({x, y}) ->
         @poles.create 1, (a)=>
