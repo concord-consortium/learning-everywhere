@@ -92,16 +92,10 @@ socket.on('shapes', function (_data) {
 });
 
 function captureAndDraw () {
-  ctx.translate(320, 0);
-  ctx.scale(-1, 1);
   mainTimer = setInterval(function () {
-    ctx.drawImage(video, 0, 0, 320, 240);
-
-    ctx2.translate(320, 0);
-    ctx2.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, 480, 360);
     ctx2.drawImage(video, 0, 0, 320, 240);
-    ctx2.translate(320, 0);
-    ctx2.scale(-1, 1);
+    scale = 320/480;
     var windfarms = [],
         villages = [],
         powerlines = [];
@@ -111,13 +105,13 @@ function captureAndDraw () {
 
         if (points && points.length) {
           ctx2.beginPath();
-          ctx2.moveTo(points[0].x, points[0].y);
-          xTot = points[0].x;
-          yTot = points[0].y;
+          ctx2.moveTo(points[0].x * scale, points[0].y * scale);
+          xTot = points[0].x * scale;
+          yTot = points[0].y * scale;
           for (var p = 1; p < points.length; p++) {
-            ctx2.lineTo(points[p].x, points[p].y);
-            xTot += points[p].x;
-            yTot += points[p].y;
+            ctx2.lineTo(points[p].x * scale, points[p].y * scale);
+            xTot += points[p].x * scale;
+            yTot += points[p].y * scale;
           }
           ctx2.closePath();
 
@@ -134,7 +128,7 @@ function captureAndDraw () {
           } else {
             if (!powerlines[i]) powerlines[i] = [];
             for (var p = 0; p < points.length; p++) {
-              powerlines[i].push({x: points[p].x, y: points[p].y})
+              powerlines[i].push({x: points[p].x * scale, y: points[p].y * scale})
             }
             ctx2.strokeStyle = "#2ba6cb";
           }
