@@ -59,7 +59,7 @@
         @powerGroups.push {villages: [], windfarms: []}
         group = @powerGroups.length-1
         for p in poles
-          @addPowerLinePole p
+          @addPowerLinePole p, group
           for v in @villages
             if !~@powerGroups[group].villages.indexOf v
               @powerGroups[group].villages.push(v) if v.distance(p) < 8
@@ -67,9 +67,10 @@
             if !~@powerGroups[group].windfarms.indexOf w
               @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
 
-      addPowerLinePole: ({x, y}) ->
+      addPowerLinePole: ({x, y}, group) ->
         @poles.create 1, (a)=>
           a.moveTo @patches.patchXY(x,y)
+          a.group = group
 
       clearPowerlines: ->
         @powerGroups = []
