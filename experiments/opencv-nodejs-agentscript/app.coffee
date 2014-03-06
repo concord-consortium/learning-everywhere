@@ -4,7 +4,7 @@ fs = require('fs')
 app = require('http').createServer (req, res) ->
   file = if req.url is '/' then '/index.html' else req.url
   console.log "#{req.method} #{file}"
-  fs.readFile "./static#{file}", (err, data) ->
+  fs.readFile "./client#{file}", (err, data) ->
     if err?
       res.write(404)
       return res.end "<h1>HTTP 404 - Not Found</h1>"
