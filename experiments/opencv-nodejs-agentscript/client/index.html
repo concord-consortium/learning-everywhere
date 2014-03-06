@@ -3,10 +3,10 @@
 <head>
   <title>Shape detection: Node.js, Socket.IO, OpenCV, Canvas</title>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/foundation/4.2.2/css/foundation.min.css">
-  <link href='style.css' rel="stylesheet" type="text/css" />
+  <link href='style/style.css' rel="stylesheet" type="text/css" />
   <meta charset=utf-8>
-  <script src="agentscript.min.js"></script>
-  <script src="coffee-script.js"></script>
+  <script src="lib/agentscript.min.js"></script>
+  <script src="lib/coffee-script.js"></script>
   <script type="text/coffeescript">
     u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
     class EnergyModel extends ABM.Model
@@ -215,6 +215,6 @@
   <video id="live" width="480" height="360" style="display: none;" autoplay></video>
   <canvas id="canvas" width="480" height="360" style="display: none;"></canvas>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="/shapes-client.js"></script>
+  <script src="/video-processing.js"></script>
 </body>
 </html>
