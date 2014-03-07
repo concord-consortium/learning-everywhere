@@ -1,4 +1,9 @@
 u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+
+shapeOffsets =
+  village: [-30, -50]
+  windfarm: [-45, -75]
+
 class EnergyModel extends ABM.Model
   setup: ->
     @patches.importColors "images/map-data.png"
@@ -10,11 +15,13 @@ class EnergyModel extends ABM.Model
     ABM.shapes.add "village", false, (ctx)=>
       ctx.scale(-(1/7), (1/7))
       ctx.rotate Math.PI
-      ctx.drawImage(villageImg, -30, -50)
+      offset = shapeOffsets.village
+      ctx.drawImage(villageImg, offset[0], offset[1])
     ABM.shapes.add "windfarm", false, (ctx)=>
       ctx.scale(-(1/7), (1/7))
       ctx.rotate Math.PI
-      ctx.drawImage(windfarmImg, -50, -80)
+      offset = shapeOffsets.windfarm
+      ctx.drawImage(windfarmImg, offset[0], offset[1])
 
     @agentBreeds "villages windfarms poles"
 
@@ -49,6 +56,17 @@ class EnergyModel extends ABM.Model
     @recompute = true
     @[breed].create 1, (a)=>
       a.moveTo @patches.patch(x,y)
+
+  findAgentCloseTo: ({x, y}) ->
+    p = @patches.patch(x,y)
+    minDistance = Infinity
+    agent = null
+    for a in @agents
+      d = a.distance p
+      if 5 > d < minDistance
+        minDistance = d
+        agent = a
+    return agent
 
   addPowerLineGroup: (poles) ->
     @powerGroups.push {villages: [], windfarms: []}
@@ -160,6 +178,7 @@ if top.location.hash
 
 layers = document.getElementById 'layers'
 mouseMode = null
+carryingBreed = null
 
 offsetX = (evt, target) ->
   evt.offsetX ? evt.pageX - target.offset().left
@@ -168,24 +187,49 @@ offsetY = (evt, target) ->
   evt.offsetY ? evt.pageY - target.offset().top
 
 setMouseMode = (mode) ->
+  layers.style.cursor = "crosshair"
   mouseMode = mode
 
 mouseDown = (x, y) ->
   switch mouseMode
-    when "villages", "windfarms"
-      model.addAgent(mouseMode, {x, y})
+    when 'villages', 'windfarms'
+      model.addAgent mouseMode, {x, y}
+    when 'move'
+      agent = model.findAgentCloseTo {x, y}
+      if agent then startDrag agent
+
+mouseUp = (x, y) ->
+  if carryingBreed
+    model.addAgent carryingBreed, {x, y}
+    carryingBreed = null
+    setMouseMode 'move'
+
+startDrag = (agent) ->
+  spriteId = agent.shape + '-sprite'
+  imgUrl = document.getElementById(spriteId).getAttribute 'src'
+  offset = (o * -1 for o in shapeOffsets[agent.shape])
+  console.log "url('#{imgUrl}') #{offset[0]} #{offset[1]},auto"
+  layers.style.cursor = "url('#{imgUrl}') #{offset[0]} #{offset[1]},auto"
+  carryingBreed = agent.breed.name
+  agent.die()
 
 layers.addEventListener 'mousedown', (evt) ->
   [x, y] = model.patches.pixelXYtoPatchXY offsetX(evt, layers), offsetY(evt, layers)
   mouseDown x, y
 
+layers.addEventListener 'mouseup', (evt) ->
+  [x, y] = model.patches.pixelXYtoPatchXY offsetX(evt, layers), offsetY(evt, layers)
+  mouseUp x, y
+
 
 ### buttons ###
 
-document.getElementById('add-village').addEventListener 'click', ->
+document.getElementById('add-village-btn').addEventListener 'click', ->
   setMouseMode 'villages'
 
-document.getElementById('add-windfarm').addEventListener 'click', ->
+document.getElementById('add-windfarm-btn').addEventListener 'click', ->
   setMouseMode 'windfarms'
 
+document.getElementById('move-btn').addEventListener 'click', ->
+  setMouseMode 'move'
 
