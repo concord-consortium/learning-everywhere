@@ -38,12 +38,17 @@ class EnergyModel extends ABM.Model
     if locs.length then @recompute = true
     for {x, y}, i in locs
       if (i < @[breed].length)
-        @[breed][i].moveTo @patches.patchXY(x,y)
+        @[breed][i].moveTo @patches.patch(x,y)
       else
         @[breed].create 1, (a)=>
-          a.moveTo @patches.patchXY(x,y)
+          a.moveTo @patches.patch(x,y)
     while locs.length < @[breed].length
       @[breed].last().die()
+
+  addAgent: (breed, {x, y}) ->
+    @recompute = true
+    @[breed].create 1, (a)=>
+      a.moveTo @patches.patch(x,y)
 
   addPowerLineGroup: (poles) ->
     @powerGroups.push {villages: [], windfarms: []}
@@ -150,3 +155,37 @@ if top.location.hash
     modelData = JSON.parse(window.atob(hash))
     model.setLocations "windfarms", modelData.windfarms
     model.setLocations "villages", modelData.villages
+
+### mouse events ###
+
+layers = document.getElementById 'layers'
+mouseMode = null
+
+offsetX = (evt, target) ->
+  evt.offsetX ? evt.pageX - target.offset().left
+
+offsetY = (evt, target) ->
+  evt.offsetY ? evt.pageY - target.offset().top
+
+setMouseMode = (mode) ->
+  mouseMode = mode
+
+mouseDown = (x, y) ->
+  switch mouseMode
+    when "villages", "windfarms"
+      model.addAgent(mouseMode, {x, y})
+
+layers.addEventListener 'mousedown', (evt) ->
+  [x, y] = model.patches.pixelXYtoPatchXY offsetX(evt, layers), offsetY(evt, layers)
+  mouseDown x, y
+
+
+### buttons ###
+
+document.getElementById('add-village').addEventListener 'click', ->
+  setMouseMode 'villages'
+
+document.getElementById('add-windfarm').addEventListener 'click', ->
+  setMouseMode 'windfarms'
+
+

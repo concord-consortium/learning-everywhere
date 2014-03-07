@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <title>Shape detection: Node.js, Socket.IO, OpenCV, Canvas</title>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/foundation/4.2.2/css/foundation.min.css">
+  <link href='style/style.css' rel="stylesheet" type="text/css" />
+  <meta charset=utf-8>
+  <script src="lib/agentscript.min.js"></script>
+  <script src="lib/coffee-script.js"></script>
+  <script type="text/coffeescript" src="energy-island.coffee"></script>
+</head>
+<body>
+  <div class="page-wrap">
+    <header>
+      <div class="row">
+        <h1>Learning Everywhere Experiments</h1>
+      </div>
+    </header>
+    <div id="sprites">
+      <img id="windfarm-sprite" src="images/windfarm.png" />
+      <img id="village-sprite" src="images/village.png" />
+    </div>
+    <div class="row">
+      <div id="layers"></div>
+      <button id="saveBtn" class="round success" onclick="saveModelURL()">Save Model</button>
+      <div id="saveUrl"></div>
+      <div id="controls">
+        <button id="add-village">Add Village</button>
+        <button id="add-windfarm">Add Wind Farm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="results">
+    <div>
+      City Electrical Needs Met:<br/>
+      <div id="needs">
+        <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
+        <span class="left">0 MW</span><span class="right">40 MW</span>
+      </div>
+    </div>
+    <div>
+      Power Generated:<br/>
+      <div id="generated">
+        <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
+        <span class="left">0 MW</span><span class="right">40 MW</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

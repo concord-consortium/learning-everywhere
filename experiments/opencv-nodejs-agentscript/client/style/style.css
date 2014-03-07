@@ -116,3 +116,7 @@ canvas {
 #needs, #generated {
   width: 221px;
 }
+#controls {
+  position: relative;
+  left: 740px;
+}
