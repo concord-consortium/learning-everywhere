@@ -65,6 +65,13 @@ canvas {
   left: 1150px;
   top: 710px;
 }
+#saveUrl > a:nth-child(1) {
+  font-size: 1.3em;
+}
+#qrcode img {
+  width: 220px;
+  margin: 10px;
+}
 #debugBtn {
   position: absolute;
   left: 1000px;

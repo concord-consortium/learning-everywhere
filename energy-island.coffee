@@ -1,4 +1,5 @@
 u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
+publicModelUrl = 'http://concord-consortium.github.io/learning-everywhere/energy-island.html'
 
 shapeOffsets =
   village: [-30, -50]
@@ -164,8 +165,29 @@ window.serializeModel = ->
 window.saveModelURL = ->
   json = window.serializeModel()
   encoded = window.btoa json
-  url = top.location.origin + "#" + encoded
-  document.getElementById("saveUrl").innerHTML = "<a href='#{url}'>Link</a>"
+  url = publicModelUrl + "#" + encoded
+  document.getElementById("saveUrl").innerHTML =
+    "<a href='#{url}'>Link</a>"
+
+  request = new XMLHttpRequest()
+  request.open 'POST', 'https://www.googleapis.com/urlshortener/v1/url', true
+  request.setRequestHeader 'Content-Type', 'application/json'
+  request.onload = ->
+    if (request.status >= 200 && request.status < 400)
+      resp = JSON.parse request.responseText
+      shortUrl = resp.id
+
+      existingHTML = document.getElementById("saveUrl").innerHTML
+      document.getElementById("saveUrl").innerHTML =
+        existingHTML + "<p>Short URL: <a href='#{shortUrl}'>#{shortUrl}</a><div id='qrcode'></div>"
+
+      if (QRCode)
+        qrcode = new QRCode "qrcode"
+        qrcode.makeCode shortUrl
+
+  request.send "{'longUrl': '#{url}'}"
+
+
 
 if top.location.hash
   hash = top.location.hash.slice(1)
