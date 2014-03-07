@@ -179,7 +179,11 @@ window.saveModelURL = ->
 
       existingHTML = document.getElementById("saveUrl").innerHTML
       document.getElementById("saveUrl").innerHTML =
-        existingHTML + "<br/>Short URL: <a href='#{shortUrl}'>#{shortUrl}</a>"
+        existingHTML + "<p>Short URL: <a href='#{shortUrl}'>#{shortUrl}</a><div id='qrcode'></div>"
+
+      if (QRCode)
+        qrcode = new QRCode "qrcode"
+        qrcode.makeCode shortUrl
 
   request.send "{'longUrl': '#{url}'}"
 
