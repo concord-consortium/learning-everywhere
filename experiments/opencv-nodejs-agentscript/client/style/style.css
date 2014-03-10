@@ -65,6 +65,7 @@ canvas {
   position: absolute;
   left: 1000px;
   top: 695px;
+  width: 130px;
 }
 #saveUrl {
   position: absolute;
@@ -82,6 +83,7 @@ canvas {
   position: absolute;
   left: 1000px;
   top: 770px;
+  width: 130px;
 }
 #sprites {
   display: none;
@@ -130,8 +132,8 @@ canvas {
   width: 221px;
 }
 #controls {
-  position: relative;
-  left: 740px;
+  position: absolute;
+  left: 990px;
   width: 200px;
 }
 #controls img {

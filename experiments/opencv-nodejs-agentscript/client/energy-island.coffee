@@ -101,15 +101,13 @@ class EnergyModel extends ABM.Model
 
     for v in @villages
       if !~@powerGroups[group].villages.indexOf v
-        console.log "distance to village: "+v.distance(p)
-        @powerGroups[group].villages.push(v) if v.distance(p) < 8
+        @powerGroups[group].villages.push(v) if v.distance(p) < 15
     for w in @windfarms
       if !~@powerGroups[group].windfarms.indexOf w
-        console.log "distance to windfarm: "+w.distance(p)
-        @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
+        @powerGroups[group].windfarms.push(w) if w.distance(p) < 15
     for w in @coalplants
       if !~@powerGroups[group].windfarms.indexOf w
-        @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
+        @powerGroups[group].windfarms.push(w) if w.distance(p) < 15
 
   clearPowerlines: ->
     @powerGroups = []
