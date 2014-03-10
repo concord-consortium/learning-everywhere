@@ -19,15 +19,26 @@
     </header>
     <div id="sprites">
       <img id="windfarm-sprite" src="images/windfarm.png" />
+      <img id="coalplant-sprite" src="images/coalplant.png" />
       <img id="village-sprite" src="images/village.png" />
     </div>
     <div class="row">
-      <div id="layers"></div>
+      <div id="model-container">
+        <div id="layers"></div>
+      </div>
       <button id="saveBtn" class="round success" onclick="saveModelURL()">Save Model</button>
       <div id="saveUrl"></div>
       <div id="controls">
-        <button id="add-village-btn">Add Village</button>
-        <button id="add-windfarm-btn">Add Wind Farm</button>
+        <button id="add-village-btn">
+          <img src="images/village.png" /> Add Village
+        </button>
+        <button id="add-windfarm-btn">
+          <img src="images/windfarm.png" /> Add Wind Farm
+        </button>
+        <button id="add-coalplant-btn">
+          <img src="images/coalplant.png" /> Add Coal Plant
+        </button>
+        <button id="add-powerlines-btn">Add Power Lines</button>
         <button id="move-btn">Move</button>
       </div>
     </div>

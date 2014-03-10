@@ -4,6 +4,7 @@ publicModelUrl = 'http://concord-consortium.github.io/learning-everywhere/energy
 shapeOffsets =
   village: [-30, -50]
   windfarm: [-45, -75]
+  coalplant: [-34, -78]
 
 class EnergyModel extends ABM.Model
   setup: ->
@@ -12,6 +13,7 @@ class EnergyModel extends ABM.Model
 
     villageImg = document.getElementById('village-sprite')
     windfarmImg = document.getElementById('windfarm-sprite')
+    coalplantImg = document.getElementById('coalplant-sprite')
 
     ABM.shapes.add "village", false, (ctx)=>
       ctx.scale(-(1/7), (1/7))
@@ -23,8 +25,13 @@ class EnergyModel extends ABM.Model
       ctx.rotate Math.PI
       offset = shapeOffsets.windfarm
       ctx.drawImage(windfarmImg, offset[0], offset[1])
+    ABM.shapes.add "coalplant", false, (ctx)=>
+      ctx.scale(-(1/7), (1/7))
+      ctx.rotate Math.PI
+      offset = shapeOffsets.coalplant
+      ctx.drawImage(coalplantImg, offset[0], offset[1])
 
-    @agentBreeds "villages windfarms poles"
+    @agentBreeds "villages windfarms coalplants poles"
 
     @villages.setDefault "shape", "village"
     @villages.setDefault "heading", 0
@@ -32,10 +39,16 @@ class EnergyModel extends ABM.Model
     @windfarms.setDefault "shape", "windfarm"
     @windfarms.setDefault "heading", 0
     @windfarms.setDefault "size", 1
+    @coalplants.setDefault "shape", "coalplant"
+    @coalplants.setDefault "heading", 0
+    @coalplants.setDefault "size", 1
 
     @poles.setDefault "shape", "circle"
     @poles.setDefault "color", [0,0,0]
     @poles.setDefault "size", 0.3
+
+    if ~top.location.pathname.indexOf "energy-island"
+      @links.setDefault "color", [0,0,0]
 
     @powerGroups = []
 
@@ -74,17 +87,29 @@ class EnergyModel extends ABM.Model
     group = @powerGroups.length-1
     for p in poles
       @addPowerLinePole p, group
-      for v in @villages
-        if !~@powerGroups[group].villages.indexOf v
-          @powerGroups[group].villages.push(v) if v.distance(p) < 8
-      for w in @windfarms
-        if !~@powerGroups[group].windfarms.indexOf w
-          @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
 
   addPowerLinePole: ({x, y}, group) ->
-    @poles.create 1, (a)=>
-      a.moveTo @patches.patchXY(x,y)
-      a.group = group
+    p = (@poles.create 1, (a)=>
+      a.moveTo @patches.patch(x,y)
+      a.group = group)[0]
+
+    if ~top.location.pathname.indexOf("energy-island") and @poles.length > 1
+      @links.create p, @poles[@poles.length-2]
+
+    if not @powerGroups[group]?
+      @powerGroups[group] = {villages: [], windfarms: []}
+
+    for v in @villages
+      if !~@powerGroups[group].villages.indexOf v
+        console.log "distance to village: "+v.distance(p)
+        @powerGroups[group].villages.push(v) if v.distance(p) < 8
+    for w in @windfarms
+      if !~@powerGroups[group].windfarms.indexOf w
+        console.log "distance to windfarm: "+w.distance(p)
+        @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
+    for w in @coalplants
+      if !~@powerGroups[group].windfarms.indexOf w
+        @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
 
   clearPowerlines: ->
     @powerGroups = []
@@ -98,6 +123,10 @@ class EnergyModel extends ABM.Model
         if farm.p.color[2] > 50 then farm.power = 0             # ocean
         else farm.power = ((255 - farm.p.color[0]) + 45) / 10   # the redder, the less wind
         _power += farm.power
+      for plant in @coalplants
+        if plant.p.color[2] > 50 then plant.power = 0             # ocean
+        else plant.power = 45
+        _power += plant.power
       @power = _power
       showPower @power, "generated"
 
@@ -149,9 +178,11 @@ window.receiveData = (windfarms, villages, powerlines) ->
       model.addPowerLineGroup powerline
 
 window.serializeModel = ->
-  json = {windfarms: [], villages: [], powerlines: []}
+  json = {windfarms: [], villages: [], coalplants: [], powerlines: []}
   for farm in model.windfarms
     json.windfarms.push {x: farm.x, y: farm.y}
+  for plant in model.coalplants
+    json.coalplants.push {x: plant.x, y: plant.y}
   for village in model.villages
     json.villages.push {x: village.x, y: village.y}
   ###
@@ -194,6 +225,7 @@ if top.location.hash
   if hash.length
     modelData = JSON.parse(window.atob(hash))
     model.setLocations "windfarms", modelData.windfarms
+    model.setLocations "coalplants", modelData.coalplants
     model.setLocations "villages", modelData.villages
 
 ### mouse events ###
@@ -214,8 +246,11 @@ setMouseMode = (mode) ->
 
 mouseDown = (x, y) ->
   switch mouseMode
-    when 'villages', 'windfarms'
+    when 'villages', 'windfarms', 'coalplants'
       model.addAgent mouseMode, {x, y}
+    when 'pole'
+      model.addPowerLinePole {x, y}, 0
+      model.recompute = true
     when 'move'
       agent = model.findAgentCloseTo {x, y}
       if agent then startDrag agent
@@ -230,7 +265,6 @@ startDrag = (agent) ->
   spriteId = agent.shape + '-sprite'
   imgUrl = document.getElementById(spriteId).getAttribute 'src'
   offset = (o * -1 for o in shapeOffsets[agent.shape])
-  console.log "url('#{imgUrl}') #{offset[0]} #{offset[1]},auto"
   layers.style.cursor = "url('#{imgUrl}') #{offset[0]} #{offset[1]},auto"
   carryingBreed = agent.breed.name
   agent.die()
@@ -251,6 +285,12 @@ document.getElementById('add-village-btn').addEventListener 'click', ->
 
 document.getElementById('add-windfarm-btn').addEventListener 'click', ->
   setMouseMode 'windfarms'
+
+document.getElementById('add-coalplant-btn').addEventListener 'click', ->
+  setMouseMode 'coalplants'
+
+document.getElementById('add-powerlines-btn').addEventListener 'click', ->
+  setMouseMode 'pole'
 
 document.getElementById('move-btn').addEventListener 'click', ->
   setMouseMode 'move'

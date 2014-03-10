@@ -3,6 +3,8 @@ body {
 }
 button {
   font-family: "Offside";
+  width: 250px;
+  padding: 8px;
 }
 #debug {
   background: #303030;
@@ -54,6 +56,10 @@ canvas {
 #canvas2 {
   position: absolute;
   left: 1000px;
+}
+#model-container {
+  position: absolute;
+  left: 257px;
 }
 #saveBtn {
   position: absolute;
@@ -126,4 +132,15 @@ canvas {
 #controls {
   position: relative;
   left: 740px;
+  width: 200px;
+}
+#controls img {
+  height: 65px;
+}
+#add-village-btn img {
+  margin-right: 17px;
+  margin-left: -22px;
+}
+#add-coalplant-btn img {
+  margin-right: 12px;
 }
