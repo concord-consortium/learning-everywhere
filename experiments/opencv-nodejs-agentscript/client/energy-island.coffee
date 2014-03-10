@@ -47,6 +47,9 @@ class EnergyModel extends ABM.Model
     @poles.setDefault "color", [0,0,0]
     @poles.setDefault "size", 0.3
 
+    if ~top.location.pathname.indexOf "energy-island"
+      @links.setDefault "color", [0,0,0]
+
     @powerGroups = []
 
   recompute: false
@@ -84,17 +87,29 @@ class EnergyModel extends ABM.Model
     group = @powerGroups.length-1
     for p in poles
       @addPowerLinePole p, group
-      for v in @villages
-        if !~@powerGroups[group].villages.indexOf v
-          @powerGroups[group].villages.push(v) if v.distance(p) < 8
-      for w in @windfarms
-        if !~@powerGroups[group].windfarms.indexOf w
-          @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
 
   addPowerLinePole: ({x, y}, group) ->
-    @poles.create 1, (a)=>
-      a.moveTo @patches.patchXY(x,y)
-      a.group = group
+    p = (@poles.create 1, (a)=>
+      a.moveTo @patches.patch(x,y)
+      a.group = group)[0]
+
+    if ~top.location.pathname.indexOf("energy-island") and @poles.length > 1
+      @links.create p, @poles[@poles.length-2]
+
+    if not @powerGroups[group]?
+      @powerGroups[group] = {villages: [], windfarms: []}
+
+    for v in @villages
+      if !~@powerGroups[group].villages.indexOf v
+        console.log "distance to village: "+v.distance(p)
+        @powerGroups[group].villages.push(v) if v.distance(p) < 8
+    for w in @windfarms
+      if !~@powerGroups[group].windfarms.indexOf w
+        console.log "distance to windfarm: "+w.distance(p)
+        @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
+    for w in @coalplants
+      if !~@powerGroups[group].windfarms.indexOf w
+        @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
 
   clearPowerlines: ->
     @powerGroups = []
@@ -233,6 +248,9 @@ mouseDown = (x, y) ->
   switch mouseMode
     when 'villages', 'windfarms', 'coalplants'
       model.addAgent mouseMode, {x, y}
+    when 'pole'
+      model.addPowerLinePole {x, y}, 0
+      model.recompute = true
     when 'move'
       agent = model.findAgentCloseTo {x, y}
       if agent then startDrag agent
@@ -270,6 +288,9 @@ document.getElementById('add-windfarm-btn').addEventListener 'click', ->
 
 document.getElementById('add-coalplant-btn').addEventListener 'click', ->
   setMouseMode 'coalplants'
+
+document.getElementById('add-powerlines-btn').addEventListener 'click', ->
+  setMouseMode 'pole'
 
 document.getElementById('move-btn').addEventListener 'click', ->
   setMouseMode 'move'
