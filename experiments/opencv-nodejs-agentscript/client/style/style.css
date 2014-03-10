@@ -57,6 +57,10 @@ canvas {
   position: absolute;
   left: 1000px;
 }
+#model-container {
+  position: absolute;
+  left: 257px;
+}
 #saveBtn {
   position: absolute;
   left: 1000px;
