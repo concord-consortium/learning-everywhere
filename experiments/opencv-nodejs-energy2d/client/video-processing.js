@@ -1,7 +1,7 @@
 var video = document.querySelector('#live'),
     canvas = document.querySelector('#canvas'),
     canvas2 = document.querySelector('#canvas2'),
-    fps = 8,
+    fps = 16,
     ctx = canvas.getContext('2d'),
     ctx2 = canvas2.getContext('2d'),
     mainTimer,
@@ -72,7 +72,7 @@ function captureAndDraw () {
           }
           ctx2.strokeStyle = "#2ba6cb";
 
-          ctx2.stroke();
+          //ctx2.stroke();
         }
       }
     }

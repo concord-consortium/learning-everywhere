@@ -5,5 +5,8 @@ body {
   z-index: 100;
   position: absolute;
   top: 0;
-  opacity: 0.4;
+  opacity: 0.6;
+}
+.e2d-part-shape-outline {
+  stroke: #333;
 }
