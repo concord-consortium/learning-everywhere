@@ -70,6 +70,7 @@ class EnergyModel extends ABM.Model
     @recompute = true
     @[breed].create 1, (a)=>
       a.moveTo @patches.patch(x,y)
+      a.power = 0
 
   findAgentCloseTo: ({x, y}) ->
     p = @patches.patch(x,y)
@@ -114,8 +115,19 @@ class EnergyModel extends ABM.Model
     for p in @poles by -1
       p.die()
 
+  numVillages: 0
+
   step: ->
     if @recompute
+
+      # recaulculate number of villages on the island
+      _numVillages = 0
+      for village in @villages
+        _numVillages++ if village.p.color[2] < 50
+      @numVillages = _numVillages
+      updateNumVillages()
+
+      # recalculate power from each plant
       _power = 0
       for farm in @windfarms
         if farm.p.color[2] > 50 then farm.power = 0             # ocean
@@ -128,13 +140,20 @@ class EnergyModel extends ABM.Model
       @power = _power
       showPower @power, "generated"
 
+      # recalculate power going to each village
+      for village in @villages
+        village.power = 0
+
       for group in @powerGroups
         group.power = 0
         for farm in group.windfarms
           group.power += farm.power
         if group.villages.length > 0
-          showPower group.power, "needs"
+          for village in group.villages
+            village.power += group.power / group.villages.length
 
+      for village, i in @villages
+        showPower village.power, "needs", i
 
       @recompute = false
 
@@ -145,14 +164,45 @@ window.model = model
 model.debug() # Debug: Put Model vars in global name space
 model.start() # Run model immediately after startup initialization
 
-showPower = (power, type) ->
+showPower = (power, type, num) ->
+  if type is "generated"
+    el = document.getElementById('generated')
+  else
+    el = document.getElementsByClassName('needs')[num+1]
+
+  return unless el
+
   left = 10 + (power/40 * 180)      # scale power: 0-40MW = 10-190px
   left = Math.min left, 190
-  document.querySelectorAll("##{type} .cover")[0].style.left = left+'px'
+  el.querySelectorAll(".cover")[0].style.left = left+'px'
 
   left = 1 + (power/40 * 177)
   left = Math.min left, 178
-  document.querySelectorAll("##{type} .arrow")[0].style.left = left+'px'
+  el.querySelectorAll(".arrow")[0].style.left = left+'px'
+
+updateNumVillages = ->
+  numVillages = model.numVillages
+  numVillageOutputs = document.getElementsByClassName('town-needs').length
+
+  if numVillages > 0
+    document.getElementById('no-towns').style.display = 'none'
+  else
+    document.getElementById('no-towns').style.display = ''
+
+  for i in [numVillageOutputs...numVillages] by 1
+    newOutput = document.getElementById('town-needs-template').cloneNode(true)
+    newOutput.setAttribute 'id', ''
+    newOutput.style.display = ''
+    newOutput.classList.add 'town-needs'
+    newOutput.getElementsByClassName('town-num')[0].innerHTML = i+1
+    document.getElementById('town-outputs').appendChild newOutput
+
+
+  for i in [numVillageOutputs...numVillages] by -1
+    els = document.getElementsByClassName('town-needs')
+    el = els[els.length-1]
+    el.parentNode.removeChild(el);
+
 
 window.receiveData = (windfarms, villages, powerlines) ->
   return if top.location.hash
@@ -278,18 +328,19 @@ layers.addEventListener 'mouseup', (evt) ->
 
 ### buttons ###
 
-document.getElementById('add-village-btn').addEventListener 'click', ->
-  setMouseMode 'villages'
+if document.getElementById('add-village-btn')
+  document.getElementById('add-village-btn').addEventListener 'click', ->
+    setMouseMode 'villages'
 
-document.getElementById('add-windfarm-btn').addEventListener 'click', ->
-  setMouseMode 'windfarms'
+  document.getElementById('add-windfarm-btn').addEventListener 'click', ->
+    setMouseMode 'windfarms'
 
-document.getElementById('add-coalplant-btn').addEventListener 'click', ->
-  setMouseMode 'coalplants'
+  document.getElementById('add-coalplant-btn').addEventListener 'click', ->
+    setMouseMode 'coalplants'
 
-document.getElementById('add-powerlines-btn').addEventListener 'click', ->
-  setMouseMode 'pole'
+  document.getElementById('add-powerlines-btn').addEventListener 'click', ->
+    setMouseMode 'pole'
 
-document.getElementById('move-btn').addEventListener 'click', ->
-  setMouseMode 'move'
+  document.getElementById('move-btn').addEventListener 'click', ->
+    setMouseMode 'move'
 

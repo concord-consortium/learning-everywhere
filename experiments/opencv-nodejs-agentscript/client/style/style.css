@@ -128,8 +128,12 @@ canvas {
   border-top: 24px solid #336D67;
   border-radius: 16px;
 }
-#needs, #generated {
+.needs, #generated {
   width: 221px;
+}
+.town-needs {
+  clear: both;
+  margin-bottom: 45px;
 }
 #controls {
   position: absolute;
