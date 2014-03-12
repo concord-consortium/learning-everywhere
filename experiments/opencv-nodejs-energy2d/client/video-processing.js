@@ -88,49 +88,33 @@ function receiveData() {
       numParts = script.getNumberOfParts(),
       contour, x, y, i, j;
 
-  for (i = numParts-1; i > numObstacles; i--) {
+  for (i = numParts-1; i > 0; i--) {
     script.removePart(i);
   }
 
   for (i = 0, ii = obstacles.length; i<ii; i++) {
     contour = obstacles[i];
     vertices = "";
-    coordsX = [];
-    coordsY = [];
     // take every fifth vertice, to reduce object complexity
     for (j = 0, jj = contour.length; j<jj; j=j+5) {
       if (!contour[j]) continue;
-      x = contour[j].x * 7.2/420;
-      y = contour[j].y * 9.6/560;
-      coordsX.push(x);
-      coordsY.push(y);
+      x = contour[j].x * 9.6/560;
+      y = contour[j].y * 7.2/420;
+      x = Math.min(x, 9);
+      y = Math.min(y, 7);
       vertices += x + ", " + y + ", ";
     }
     vertices = vertices.slice(0,-2);
-    if (i < numParts - 1) {
-      // modify an existing shape
-      part = script.getPart(i+1);
-      if (coordsX.length > part.raw_x_coords.length) {
-        // if we have more vertices than before, we have to modify y first or we get
-        // an error immediately after the x-coords are modified
-        part.raw_y_coords = coordsY;
-        part.raw_x_coords = coordsX;
-      } else {
-        // ... and visa-versa
-        part.raw_x_coords = coordsX;
-        part.raw_y_coords = coordsY;
-      }
-    } else {
-      // add a new shape
-      script.addPart(
-        {
-          "shapeType": "polygon",
-          "x": 0,
-          "y": 0,
-          "temperature": 0,
-          "constant_temperature": true,
-          "vertices": vertices
-        })
-    }
+
+    // add a new shape
+    script.addPart(
+      {
+        "shapeType": "polygon",
+        "x": 0,
+        "y": 0,
+        "temperature": 0,
+        "constant_temperature": true,
+        "vertices": vertices
+      })
   }
 }
