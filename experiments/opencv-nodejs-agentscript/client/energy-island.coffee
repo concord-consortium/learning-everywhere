@@ -116,6 +116,7 @@ class EnergyModel extends ABM.Model
       p.die()
 
   numVillages: 0
+  pollution: 0
 
   step: ->
     if @recompute
@@ -129,6 +130,7 @@ class EnergyModel extends ABM.Model
 
       # recalculate power from each plant
       _power = 0
+      _pollution = 0
       for farm in @windfarms
         if farm.p.color[2] > 50 then farm.power = 0             # ocean
         else farm.power = ((255 - farm.p.color[0]) + 45) / 10   # the redder, the less wind
@@ -137,8 +139,12 @@ class EnergyModel extends ABM.Model
         if plant.p.color[2] > 50 then plant.power = 0             # ocean
         else plant.power = 45
         _power += plant.power
+        _pollution += plant.power
       @power = _power
+      @pollution = _pollution
+
       showPower @power, "generated"
+      showPower @pollution, "pollution"
 
       # recalculate power going to each village
       for village in @villages
@@ -165,18 +171,20 @@ model.debug() # Debug: Put Model vars in global name space
 model.start() # Run model immediately after startup initialization
 
 showPower = (power, type, num) ->
-  if type is "generated"
-    el = document.getElementById('generated')
+  if type isnt "needs"
+    el = document.getElementById(type)
   else
     el = document.getElementsByClassName('needs')[num+1]
 
   return unless el
 
-  left = 10 + (power/40 * 180)      # scale power: 0-40MW = 10-190px
+  max = if type is "pollution" then 100 else 40
+
+  left = 10 + (power/max * 180)      # scale power: 0-40MW = 10-190px
   left = Math.min left, 190
   el.querySelectorAll(".cover")[0].style.left = left+'px'
 
-  left = 1 + (power/40 * 177)
+  left = 1 + (power/max * 177)
   left = Math.min left, 178
   el.querySelectorAll(".arrow")[0].style.left = left+'px'
 
