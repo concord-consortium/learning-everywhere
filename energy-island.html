@@ -30,7 +30,7 @@
       <div id="saveUrl"></div>
       <div id="controls">
         <button id="add-village-btn">
-          <img src="images/village.png" /> Add Village
+          <img src="images/village.png" /> Add Town
         </button>
         <button id="add-windfarm-btn">
           <img src="images/windfarm.png" /> Add Wind Farm
@@ -46,17 +46,28 @@
 
   <div id="results">
     <div>
-      City Electrical Needs Met:<br/>
-      <div id="needs">
+      <h5>Power Generated:</h5>
+      <div id="generated">
         <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
         <span class="left">0 MW</span><span class="right">40 MW</span>
       </div>
     </div>
     <div>
-      Power Generated:<br/>
-      <div id="generated">
+      <h5>Pollution:</h5>
+      <div id="pollution">
         <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
         <span class="left">0 MW</span><span class="right">40 MW</span>
+      </div>
+    </div>
+    <div id="town-outputs">
+      <h5>Town Electrical Needs Met:</h5>
+      <div id="no-towns">No towns on the island.</div>
+      <div id="town-needs-template" style="display: none;">
+        <b>Town <span class="town-num">1</span>:</b>
+        <div class="needs">
+          <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
+          <span class="left">0 MW</span><span class="right">40 MW</span>
+        </div>
       </div>
     </div>
   </div>

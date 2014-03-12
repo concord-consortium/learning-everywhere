@@ -1,0 +1,12 @@
+body {
+  background-color: white;
+}
+#canvas2 {
+  z-index: 100;
+  position: absolute;
+  top: 0;
+  opacity: 0.6;
+}
+.e2d-part-shape-outline {
+  stroke: #333;
+}

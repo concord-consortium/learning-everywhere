@@ -65,6 +65,7 @@ canvas {
   position: absolute;
   left: 1000px;
   top: 695px;
+  width: 130px;
 }
 #saveUrl {
   position: absolute;
@@ -82,6 +83,7 @@ canvas {
   position: absolute;
   left: 1000px;
   top: 770px;
+  width: 130px;
 }
 #sprites {
   display: none;
@@ -108,6 +110,16 @@ canvas {
   background: linear-gradient(to right,  #ff3232 0%,#edf72e 50%,#2aff00 100%);
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff3232', endColorstr='#2aff00',GradientType=0 );
 }
+#pollution .scale {
+  background: #b1f9f7;
+  background: -moz-linear-gradient(left,  #b1f9f7 0%, #324f3a 100%);
+  background: -webkit-gradient(linear, left top, right top, color-stop(0%,#b1f9f7), color-stop(100%,#324f3a));
+  background: -webkit-linear-gradient(left,  #b1f9f7 0%,#324f3a 100%);
+  background: -o-linear-gradient(left,  #b1f9f7 0%,#324f3a 100%);
+  background: -ms-linear-gradient(left,  #b1f9f7 0%,#324f3a 100%);
+  background: linear-gradient(to right,  #b1f9f7 0%,#324f3a 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b1f9f7', endColorstr='#324f3a',GradientType=1 );
+}
 .scale .cover {
   position: absolute;
   left: 10px;
@@ -126,12 +138,16 @@ canvas {
   border-top: 24px solid #336D67;
   border-radius: 16px;
 }
-#needs, #generated {
+.needs, #generated, #pollution {
   width: 221px;
 }
+.town-needs {
+  clear: both;
+  margin-bottom: 45px;
+}
 #controls {
-  position: relative;
-  left: 740px;
+  position: absolute;
+  left: 990px;
   width: 200px;
 }
 #controls img {

@@ -70,6 +70,7 @@ class EnergyModel extends ABM.Model
     @recompute = true
     @[breed].create 1, (a)=>
       a.moveTo @patches.patch(x,y)
+      a.power = 0
 
   findAgentCloseTo: ({x, y}) ->
     p = @patches.patch(x,y)
@@ -94,31 +95,43 @@ class EnergyModel extends ABM.Model
       a.group = group)[0]
 
     if ~top.location.pathname.indexOf("energy-island") and @poles.length > 1
-      @links.create p, @poles[@poles.length-2]
+      if @poles[@poles.length-2].group == group
+        @links.create p, @poles[@poles.length-2]
 
     if not @powerGroups[group]?
       @powerGroups[group] = {villages: [], windfarms: []}
 
     for v in @villages
       if !~@powerGroups[group].villages.indexOf v
-        console.log "distance to village: "+v.distance(p)
-        @powerGroups[group].villages.push(v) if v.distance(p) < 8
+        @powerGroups[group].villages.push(v) if v.distance(p) < 15
     for w in @windfarms
       if !~@powerGroups[group].windfarms.indexOf w
-        console.log "distance to windfarm: "+w.distance(p)
-        @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
+        @powerGroups[group].windfarms.push(w) if w.distance(p) < 15
     for w in @coalplants
       if !~@powerGroups[group].windfarms.indexOf w
-        @powerGroups[group].windfarms.push(w) if w.distance(p) < 8
+        @powerGroups[group].windfarms.push(w) if w.distance(p) < 15
 
   clearPowerlines: ->
     @powerGroups = []
     for p in @poles by -1
       p.die()
 
+  numVillages: 0
+  pollution: 0
+
   step: ->
     if @recompute
+
+      # recaulculate number of villages on the island
+      _numVillages = 0
+      for village in @villages
+        _numVillages++ if village.p.color[2] < 50
+      @numVillages = _numVillages
+      updateNumVillages()
+
+      # recalculate power from each plant
       _power = 0
+      _pollution = 0
       for farm in @windfarms
         if farm.p.color[2] > 50 then farm.power = 0             # ocean
         else farm.power = ((255 - farm.p.color[0]) + 45) / 10   # the redder, the less wind
@@ -127,16 +140,27 @@ class EnergyModel extends ABM.Model
         if plant.p.color[2] > 50 then plant.power = 0             # ocean
         else plant.power = 45
         _power += plant.power
+        _pollution += plant.power
       @power = _power
+      @pollution = _pollution
+
       showPower @power, "generated"
+      showPower @pollution, "pollution"
+
+      # recalculate power going to each village
+      for village in @villages
+        village.power = 0
 
       for group in @powerGroups
         group.power = 0
         for farm in group.windfarms
           group.power += farm.power
         if group.villages.length > 0
-          showPower group.power, "needs"
+          for village in group.villages
+            village.power += group.power / group.villages.length
 
+      for village, i in @villages
+        showPower village.power, "needs", i
 
       @recompute = false
 
@@ -147,14 +171,47 @@ window.model = model
 model.debug() # Debug: Put Model vars in global name space
 model.start() # Run model immediately after startup initialization
 
-showPower = (power, type) ->
-  left = 10 + (power/40 * 180)      # scale power: 0-40MW = 10-190px
-  left = Math.min left, 190
-  document.querySelectorAll("##{type} .cover")[0].style.left = left+'px'
+showPower = (power, type, num) ->
+  if type isnt "needs"
+    el = document.getElementById(type)
+  else
+    el = document.getElementsByClassName('needs')[num+1]
 
-  left = 1 + (power/40 * 177)
+  return unless el
+
+  max = if type is "pollution" then 100 else 40
+
+  left = 10 + (power/max * 180)      # scale power: 0-40MW = 10-190px
+  left = Math.min left, 190
+  el.querySelectorAll(".cover")[0].style.left = left+'px'
+
+  left = 1 + (power/max * 177)
   left = Math.min left, 178
-  document.querySelectorAll("##{type} .arrow")[0].style.left = left+'px'
+  el.querySelectorAll(".arrow")[0].style.left = left+'px'
+
+updateNumVillages = ->
+  numVillages = model.numVillages
+  numVillageOutputs = document.getElementsByClassName('town-needs').length
+
+  if numVillages > 0
+    document.getElementById('no-towns').style.display = 'none'
+  else
+    document.getElementById('no-towns').style.display = ''
+
+  for i in [numVillageOutputs...numVillages] by 1
+    newOutput = document.getElementById('town-needs-template').cloneNode(true)
+    newOutput.setAttribute 'id', ''
+    newOutput.style.display = ''
+    newOutput.classList.add 'town-needs'
+    newOutput.getElementsByClassName('town-num')[0].innerHTML = i+1
+    document.getElementById('town-outputs').appendChild newOutput
+
+
+  for i in [numVillageOutputs...numVillages] by -1
+    els = document.getElementsByClassName('town-needs')
+    el = els[els.length-1]
+    el.parentNode.removeChild(el);
+
 
 window.receiveData = (windfarms, villages, powerlines) ->
   return if top.location.hash
@@ -232,6 +289,7 @@ if top.location.hash
 
 layers = document.getElementById 'layers'
 mouseMode = null
+poleGroup = -1
 carryingBreed = null
 
 offsetX = (evt, target) ->
@@ -249,7 +307,7 @@ mouseDown = (x, y) ->
     when 'villages', 'windfarms', 'coalplants'
       model.addAgent mouseMode, {x, y}
     when 'pole'
-      model.addPowerLinePole {x, y}, 0
+      model.addPowerLinePole {x, y}, poleGroup
       model.recompute = true
     when 'move'
       agent = model.findAgentCloseTo {x, y}
@@ -280,18 +338,20 @@ layers.addEventListener 'mouseup', (evt) ->
 
 ### buttons ###
 
-document.getElementById('add-village-btn').addEventListener 'click', ->
-  setMouseMode 'villages'
+if document.getElementById('add-village-btn')
+  document.getElementById('add-village-btn').addEventListener 'click', ->
+    setMouseMode 'villages'
 
-document.getElementById('add-windfarm-btn').addEventListener 'click', ->
-  setMouseMode 'windfarms'
+  document.getElementById('add-windfarm-btn').addEventListener 'click', ->
+    setMouseMode 'windfarms'
 
-document.getElementById('add-coalplant-btn').addEventListener 'click', ->
-  setMouseMode 'coalplants'
+  document.getElementById('add-coalplant-btn').addEventListener 'click', ->
+    setMouseMode 'coalplants'
 
-document.getElementById('add-powerlines-btn').addEventListener 'click', ->
-  setMouseMode 'pole'
+  document.getElementById('add-powerlines-btn').addEventListener 'click', ->
+    setMouseMode 'pole'
+    poleGroup++
 
-document.getElementById('move-btn').addEventListener 'click', ->
-  setMouseMode 'move'
+  document.getElementById('move-btn').addEventListener 'click', ->
+    setMouseMode 'move'
 

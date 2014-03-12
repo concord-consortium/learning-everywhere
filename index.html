@@ -23,7 +23,9 @@
       <img id="village-sprite" src="images/village.png" />
     </div>
     <div class="row">
-      <div id="layers"></div>
+      <div id="model-container">
+        <div id="layers"></div>
+      </div>
       <canvas id="canvas2" width="320" height="240"></canvas>
       <button id="saveBtn" class="round success" onclick="saveModelURL()">Save Model</button>
       <button id="debugBtn" class="round success">Open Debug</button>
@@ -45,17 +47,21 @@
 
   <div id="results">
     <div>
-      City Electrical Needs Met:<br/>
-      <div id="needs">
-        <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
-        <span class="left">0 MW</span><span class="right">40 MW</span>
-      </div>
-    </div>
-    <div>
       Power Generated:<br/>
       <div id="generated">
         <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
         <span class="left">0 MW</span><span class="right">40 MW</span>
+      </div>
+    </div>
+    <div id="town-outputs">
+      <h5>Town Electrical Needs Met:</h5>
+      <div id="no-towns">No towns on the island.</div>
+      <div id="town-needs-template" style="display: none;">
+        <b>Town <span class="town-num">1</span>:</b>
+        <div class="needs">
+          <div class="scale"><div class="cover"></div><div class="arrow"></div></div>
+          <span class="left">0 MW</span><span class="right">40 MW</span>
+        </div>
       </div>
     </div>
   </div>
