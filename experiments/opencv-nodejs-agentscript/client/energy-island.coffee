@@ -95,7 +95,8 @@ class EnergyModel extends ABM.Model
       a.group = group)[0]
 
     if ~top.location.pathname.indexOf("energy-island") and @poles.length > 1
-      @links.create p, @poles[@poles.length-2]
+      if @poles[@poles.length-2].group == group
+        @links.create p, @poles[@poles.length-2]
 
     if not @powerGroups[group]?
       @powerGroups[group] = {villages: [], windfarms: []}
@@ -288,6 +289,7 @@ if top.location.hash
 
 layers = document.getElementById 'layers'
 mouseMode = null
+poleGroup = -1
 carryingBreed = null
 
 offsetX = (evt, target) ->
@@ -305,7 +307,7 @@ mouseDown = (x, y) ->
     when 'villages', 'windfarms', 'coalplants'
       model.addAgent mouseMode, {x, y}
     when 'pole'
-      model.addPowerLinePole {x, y}, 0
+      model.addPowerLinePole {x, y}, poleGroup
       model.recompute = true
     when 'move'
       agent = model.findAgentCloseTo {x, y}
@@ -348,6 +350,7 @@ if document.getElementById('add-village-btn')
 
   document.getElementById('add-powerlines-btn').addEventListener 'click', ->
     setMouseMode 'pole'
+    poleGroup++
 
   document.getElementById('move-btn').addEventListener 'click', ->
     setMouseMode 'move'
