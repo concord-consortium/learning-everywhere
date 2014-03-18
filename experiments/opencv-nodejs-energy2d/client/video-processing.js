@@ -130,6 +130,15 @@ function toggleShowShapes() {
   }, 1);
 }
 
+function saveModel() {
+  var json = JSON.stringify(interactiveController.getModelController().state());
+  socket.emit("savefile", json);
+}
+
+socket.on('saved', function() {
+  document.getElementById('saved-model-link').style.display = "";
+})
+
 function receiveData() {
   if (!window.doReceiveData) return;
   var numObstacles = obstacles.length,

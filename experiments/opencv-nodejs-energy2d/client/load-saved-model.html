@@ -27,19 +27,6 @@
   </head>
   <body>
     <div id='interactive-container' tabindex='0' style="width: 600px; height: 495px"></div>
-    <video id="live" width="560" height="420" style="display: none;" autoplay></video>
-    <canvas id="canvas" width="560" height="420" style="display: none;"></canvas>
-    <canvas id="canvas2" width="560" height="420" style="left: 9px; top: 28px;"></canvas>
-    <div style="position: absolute;top: 150px;left: 700px;">
-      <input type="checkbox" id="update-model-check" onclick="toggleUpdateModel()"></input>
-      <label for="update-model-check" style="font-size: 1em;">Update model from video</label><br/>
-      <input type="checkbox" id="shapes-check" onclick="toggleShowShapes()"></input>
-      <label for="shapes-check" style="font-size: 1em;">Show shapes</label><br/>
-      <button id="save" onclick="saveModel()">Save model</button><br/>
-      <a id="saved-model-link" href="load-saved-model.html" style="display: none;">Open saved model</a>
-    </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/video-processing.js"></script>
     <script>
       (function() {
         window.interactiveController = new Lab.InteractivesController(
@@ -56,6 +43,12 @@
           },
           '#interactive-container');
       }());
+
+      $(function() {
+        $.getJSON('saved-e2d-model.json', function(model) {
+            window.interactiveController.loadModel("model", model)
+        });
+      })
     </script>
   </body>
 </html>

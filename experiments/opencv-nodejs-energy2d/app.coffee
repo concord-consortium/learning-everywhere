@@ -74,6 +74,14 @@ io = require('socket.io').listen(app).on 'connection', (socket) ->
 
       socket.volatile.emit('shapes', data)
 
+  socket.on 'savefile', (json) ->
+    console.log 'save model json'
+    fs.writeFile "client/saved-e2d-model.json", json, (err) ->
+      if err
+        console.log err
+      else
+        console.log "The file was saved"
+        socket.volatile.emit 'saved'
 
 io.disable('sync disconnect on unload')
 io.enable('browser client minification')
