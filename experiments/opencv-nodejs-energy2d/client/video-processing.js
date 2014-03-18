@@ -7,6 +7,8 @@ var video = document.querySelector('#live'),
     mainTimer,
     contours = {},
     obstacles = [],
+    glasses = [],
+    foundGlass = false,
 
     calibrations = {
       obstacle: {
@@ -14,12 +16,26 @@ var video = document.querySelector('#live'),
         lowThresh   : 0,
         highThresh  : 100,
         useHSV      : true,
-        lowerHSV    : [0, 73, 37],
-        upperHSV    : [44, 189, 255],
+        lowerHSV    : [8, 71, 50],
+        upperHSV    : [28, 255, 255],
         dilate      : true,
         nIters      : 3,
         convex      : false,
-        minArea     : 2000,
+        minArea     : 4000,
+        maxArea     : Infinity,
+        approxPolygons : false
+      },
+      glass: {
+        useCanny    : false,
+        lowThresh   : 0,
+        highThresh  : 100,
+        useHSV      : true,
+        lowerHSV    : [62, 72, 100],
+        upperHSV    : [123, 255, 255],
+        dilate      : true,
+        nIters      : 3,
+        convex      : true,
+        minArea     : 4000,
         maxArea     : Infinity,
         approxPolygons : false
       }
@@ -50,6 +66,7 @@ function captureAndDraw () {
     ctx.drawImage(video, 0, 0, 560, 420);
     ctx2.drawImage(video, 0, 0, 560, 420);
     obstacles = [];
+    glasses = [];
     for (type in contours) {
       for (i in contours[type]) {
         var points = contours[type][i];
@@ -66,11 +83,17 @@ function captureAndDraw () {
           }
           ctx2.closePath();
 
-          if (!obstacles[i]) obstacles[i] = [];
-          for (var p = 0; p < points.length; p++) {
-            obstacles[i].push({x: points[p].x, y: points[p].y})
+          if (type == "obstacle") {
+            if (!obstacles[i]) obstacles[i] = [];
+            for (var p = 0; p < points.length; p++) {
+              obstacles[i].push({x: points[p].x, y: points[p].y})
+            }
+          } else {
+            if (!glasses[i]) glasses[i] = [];
+            for (var p = 0; p < points.length; p++) {
+              glasses[i].push({x: points[p].x, y: points[p].y})
+            }
           }
-          ctx2.strokeStyle = "#2ba6cb";
 
           //ctx2.stroke();
         }
@@ -81,27 +104,42 @@ function captureAndDraw () {
 }
 captureAndDraw();
 
-setInterval(receiveData, 1000);
+setInterval(receiveData, 1500);
+
+function toggleUpdateModel() {
+  if (window.doReceiveData) {
+    window.doReceiveData = false;
+  } else {
+    window.doReceiveData = true;
+  }
+}
 
 function receiveData() {
+  if (!window.doReceiveData) return;
   var numObstacles = obstacles.length,
       numParts = script.getNumberOfParts(),
       contour, x, y, i, j;
 
   for (i = numParts-1; i > 0; i--) {
-    script.removePart(i);
+    if (script.getPart(i).thermal_conductivity == 0) {
+      script.removePart(i);
+    } else {
+      foundGlass = true;
+    }
   }
 
   for (i = 0, ii = obstacles.length; i<ii; i++) {
     contour = obstacles[i];
     vertices = "";
-    // take every fifth vertice, to reduce object complexity
-    for (j = 0, jj = contour.length; j<jj; j=j+5) {
+    // take every third vertice, to reduce object complexity
+    for (j = 0, jj = contour.length; j<jj; j=j+3) {
       if (!contour[j]) continue;
       x = contour[j].x * 9.6/560;
       y = contour[j].y * 7.2/420;
       x = Math.min(x, 9);
       y = Math.min(y, 7);
+      x = Math.max(x, 1);
+      y = Math.max(y, 1);
       vertices += x + ", " + y + ", ";
     }
     vertices = vertices.slice(0,-2);
@@ -113,8 +151,49 @@ function receiveData() {
         "x": 0,
         "y": 0,
         "temperature": 0,
-        "constant_temperature": true,
+        "constant_temperature": false,
+        "reflection": 100,
+        "absorption": 0,
+        "filled": false,
+        "visible": false,
+        "thermal_conductivity": 0,
+        "specific_heat": 1000000,
         "vertices": vertices
       })
+  }
+  if (!foundGlass) {
+    for (i = 0, ii = glasses.length; i<ii; i++) {
+      contour = glasses[i];
+      vertices = "";
+      // take every third vertice, to reduce object complexity
+      for (j = 0, jj = contour.length; j<jj; j=j+3) {
+        if (!contour[j]) continue;
+        x = contour[j].x * 9.6/560;
+        y = contour[j].y * 7.2/420;
+        x = Math.min(x, 9);
+        y = Math.min(y, 7);
+        x = Math.max(x, 1);
+        y = Math.max(y, 1);
+        vertices += x + ", " + y + ", ";
+      }
+      vertices = vertices.slice(0,-2);
+
+      // add a new shape
+      script.addPart(
+        {
+          "shapeType": "polygon",
+          "x": 0,
+          "y": 0,
+          "temperature": 0,
+          "constant_temperature": false,
+          "reflection": 100,
+          "absorption": 0,
+          "filled": false,
+          "visible": false,
+          "thermal_conductivity": 0.3,
+          "specific_heat": 50,
+          "vertices": vertices
+        })
+    }
   }
 }

@@ -8,5 +8,5 @@ body {
   opacity: 0.6;
 }
 .e2d-part-shape-outline {
-  stroke: #333;
+  stroke: rgba(0,0,0,0);
 }
