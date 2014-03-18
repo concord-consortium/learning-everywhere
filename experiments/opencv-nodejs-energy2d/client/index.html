@@ -32,7 +32,9 @@
     <canvas id="canvas2" width="560" height="420" style="left: 9px; top: 28px;"></canvas>
     <div style="position: absolute;top: 150px;left: 700px;">
       <input type="checkbox" id="update-model-check" onclick="toggleUpdateModel()"></input>
-      <label for="update-model-check" style="font-size: 1em;">Update model from video</label>
+      <label for="update-model-check" style="font-size: 1em;">Update model from video</label><br/>
+      <input type="checkbox" id="shapes-check" onclick="toggleShowShapes()"></input>
+      <label for="shapes-check" style="font-size: 1em;">Show shapes</label><br/>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/video-processing.js"></script>

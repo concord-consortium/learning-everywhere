@@ -8,6 +8,8 @@ var video = document.querySelector('#live'),
     contours = {},
     obstacles = [],
     glasses = [],
+    doReceiveData = false,
+    showShapes = false,
     foundGlass = false,
 
     calibrations = {
@@ -107,11 +109,25 @@ captureAndDraw();
 setInterval(receiveData, 1500);
 
 function toggleUpdateModel() {
-  if (window.doReceiveData) {
-    window.doReceiveData = false;
+  if (doReceiveData) {
+    doReceiveData = false;
   } else {
-    window.doReceiveData = true;
+    doReceiveData = true;
   }
+}
+
+function toggleShowShapes() {
+  if (showShapes) {
+    showShapes = false;
+  } else {
+    showShapes = true;
+  }
+  setTimeout(function() {
+    for (var i=0, ii=script.getNumberOfParts(); i < ii; i++) {
+      script.getPart(i).filled = showShapes;
+      script.getPart(i).visible = showShapes;
+    }
+  }, 1);
 }
 
 function receiveData() {
@@ -154,8 +170,8 @@ function receiveData() {
         "constant_temperature": false,
         "reflection": 100,
         "absorption": 0,
-        "filled": false,
-        "visible": false,
+        "filled": showShapes,
+        "visible": showShapes,
         "thermal_conductivity": 0,
         "specific_heat": 1000000,
         "vertices": vertices
@@ -188,8 +204,8 @@ function receiveData() {
           "constant_temperature": false,
           "reflection": 100,
           "absorption": 0,
-          "filled": false,
-          "visible": false,
+          "filled": showShapes,
+          "visible": showShapes,
           "thermal_conductivity": 0.3,
           "specific_heat": 50,
           "vertices": vertices
