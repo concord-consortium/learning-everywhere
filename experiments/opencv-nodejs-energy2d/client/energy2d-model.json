@@ -1,8 +1,8 @@
 {
   "type": "energy2d",
   "use_WebGL": true,
-  "grid_width": 60,
-  "grid_height": 60,
+  "grid_width": 250,
+  "grid_height": 250,
   "model_width": 9.6,
   "model_height": 7.2,
   "timeStep": 0.1,
@@ -10,11 +10,11 @@
   "ticksPerGPUSync": 30,
   "convective": true,
   "background_temperature": 0,
-  "background_conductivity": 0.2,
+  "background_conductivity": 0.5,
   "background_specific_heat": 100,
   "background_density": 1,
-  "background_viscosity": 0.0001,
-  "thermal_buoyancy": 0.0002,
+  "background_viscosity": 0,
+  "thermal_buoyancy": 0,
   "buoyancy_approximation": 0,
   "viewOptions": {
     "showClock": false,
@@ -30,7 +30,7 @@
       {
         "shapeType": "rectangle",
         "x": 4.3,
-        "y": 6,
+        "y": 4,
         "width": 1,
         "height": 0.4,
         "thermal_conductivity": 1,
@@ -40,9 +40,9 @@
         "reflection": 0,
         "absorption": 1,
         "emissivity": 0,
-        "temperature": 60,
+        "temperature": 30,
         "constant_temperature": false,
-        "power": 1000,
+        "power": 500000,
         "wind_speed": 0,
         "wind_angle": 0,
         "visible": true,
@@ -54,5 +54,18 @@
       }
     ]
   },
-  "sensors": []
+  "sensors": [
+    {
+      "type": "thermometer",
+      "x": 0.75,
+      "y": 6,
+      "label": "T1"
+    },
+    {
+      "type": "thermometer",
+      "x": 6.75,
+      "y": 2,
+      "label": "T2"
+    }
+  ]
 }
