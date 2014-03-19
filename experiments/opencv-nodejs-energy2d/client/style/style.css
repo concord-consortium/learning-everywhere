@@ -1,7 +1,7 @@
 body {
   background-color: white;
 }
-#canvas2 {
+#canvas2, #editingcanvas {
   z-index: 100;
   position: absolute;
   top: 0;
@@ -9,4 +9,12 @@ body {
 }
 .e2d-part-shape-outline {
   stroke: rgba(0,0,0,0);
+}
+#editingcanvas {
+  pointer-events: none;
+  cursor: default;
+}
+#editingcanvas.editing {
+  pointer-events: all;
+  cursor: crosshair;
 }
