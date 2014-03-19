@@ -1,6 +1,7 @@
 $(function() {
   var editing = false,
       canvas = document.getElementById('editingcanvas'),
+      button = document.getElementById('draw-btn'),
       ctx = canvas.getContext("2d"),
       currentRectangle = null;
 
@@ -9,8 +10,10 @@ $(function() {
 
     if (!editing) {
       canvas.classList.remove('editing');
+      button.classList.remove('active');
     } else {
       canvas.classList.add('editing');
+      button.classList.add('active');
     }
   }
 
