@@ -1,6 +1,15 @@
 body {
   background-color: white;
 }
+header {
+  background-color: #2ba6cb;
+  box-shadow: 0px 2px 2px #004080;
+  padding: 10px;
+  padding-left: 50px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-size: 1.2em;
+}
 #canvas2, #editingcanvas {
   z-index: 100;
   position: absolute;
@@ -11,6 +20,7 @@ body {
   stroke: rgba(0,0,0,0);
 }
 #editingcanvas {
+  position: relative;
   pointer-events: none;
   cursor: default;
 }
