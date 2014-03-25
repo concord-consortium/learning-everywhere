@@ -1,10 +1,17 @@
 var updateVideo = true,
     calibrationMode = false,
+    sampling = false,
     contours = [],
     videoUpdateTime = 500,
     modelUpdateTime = 1200,
     captureAndProcess,
-    updateModel;
+    updateModel,
+    _minH = Infinity,
+    _maxH = 0,
+    _minS = Infinity,
+    _maxS = 0,
+    _minV = Infinity,
+    _maxV = 0;
 
 function calibrate() {
   $('#calibrations').toggleClass("show", 500);
@@ -14,6 +21,31 @@ function calibrate() {
   } else {
     videoUpdateTime = 500;
     calibrationMode = false;
+  }
+}
+
+function offsetX(evt, target) {
+  var offset;
+  return (offset = evt.offsetX) != null ? offset : evt.pageX - target.offset().left;
+}
+
+function offsetY(evt, target) {
+  var offset;
+  return (offset = evt.offsetY) != null ? offset : evt.pageY - target.offset().top;
+}
+
+function toggleSample() {
+  sampling = true;
+  if (!canvas1.classList.contains("sampling")) {
+    canvas1.classList.add('sampling');
+    document.getElementById('sampling').innerHTML = "Reset sampling";
+  } else {
+    _minH = Infinity,
+    _maxH = 0,
+    _minS = Infinity,
+    _maxS = 0,
+    _minV = Infinity,
+    _maxV = 0;
   }
 }
 
@@ -185,6 +217,39 @@ $(function() {
 
     return imageDst;
   }
+
+  function mousedown(evt) {
+    if (!sampling) return;
+    var x = offsetX(evt, canvas1),
+        y = offsetY(evt, canvas1);
+
+    ctx1 = canvas1.getContext('2d');
+    p = ctx1.getImageData(x, y, 1, 1).data;
+    hsv = rgb2hsv(p[0],p[1],p[2]);
+
+    _minH = Math.min(_minH, Math.max(0, Math.min(360, hsv[0]-5)));
+    _maxH = Math.max(_maxH, Math.max(0, Math.min(360, hsv[0]+5)));
+    _minS = Math.min(_minS, Math.max(0, Math.min(1, hsv[1]-0.05)));
+    _maxS = Math.max(_maxS, Math.max(0, Math.min(1, hsv[1]+0.05)));
+    _minV = Math.min(_minV, Math.max(0, Math.min(1, hsv[2]-0.05)));
+    _maxV = Math.max(_maxV, Math.max(0, Math.min(1, hsv[2]+0.05)));
+
+    hsvThreshold = new HSVThreshold(_minH, _maxH, _minS, _maxS, _minV, _maxV);
+
+    function setSliders() {
+      hueSlider.rangeSlider("min", _minH);
+      hueSlider.rangeSlider("max", _maxH);
+      satSlider.rangeSlider("min", _minS*100);
+      satSlider.rangeSlider("max", _maxS*100);
+      valSlider.rangeSlider("min", _minV*100);
+      valSlider.rangeSlider("max", _maxV*100);
+    }
+
+    setTimeout(setSliders, 50);
+    setSliders();
+  }
+
+  canvas1.addEventListener("mousedown",mousedown);
 });
 
 showShapes = true
