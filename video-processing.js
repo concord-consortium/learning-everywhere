@@ -110,7 +110,7 @@ $(function() {
       setTimeout(capture, 100);
       return;
     }
-    topctx.drawImage(video, 0, 0, 560, 420);
+    topctx.drawImage(video, 0, 0, 760, 570);
     if (videoUpdateTime > 0) {
       setTimeout(capture, videoUpdateTime);
     } else {

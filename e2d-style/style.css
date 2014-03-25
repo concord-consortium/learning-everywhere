@@ -14,7 +14,7 @@ header {
   z-index: 100;
   position: absolute;
   top: 0;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 .sampling {
   cursor: crosshair;
