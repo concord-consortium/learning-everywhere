@@ -2,9 +2,10 @@ var updateVideo = true,
     calibrationMode = false,
     sampling = false,
     contours = [],
-    videoUpdateTime = 500,
-    modelUpdateTime = 1200,
-    captureAndProcess,
+    videoUpdateTime = 200,
+    modelUpdateTime = 3000,
+    capture,
+    process,
     updateModel,
     _minH = Infinity,
     _maxH = 0,
@@ -15,12 +16,13 @@ var updateVideo = true,
 
 function calibrate() {
   $('#calibrations').toggleClass("show", 500);
-  if (videoUpdateTime == 500) {
+  if (!calibrationMode) {
     videoUpdateTime = -1;
     calibrationMode = true;
   } else {
-    videoUpdateTime = 500;
+    videoUpdateTime = 200;
     calibrationMode = false;
+    setTimeout(process, modelUpdateTime);
   }
 }
 
@@ -95,29 +97,32 @@ $(function() {
     video.src = window.URL.createObjectURL(stream);
 
     if (videoUpdateTime > 0) {
-      setTimeout(captureAndProcess, videoUpdateTime);
+      setTimeout(capture, videoUpdateTime);
     } else {
-      requestAnimationFrame(captureAndProcess);
+      requestAnimationFrame(capture);
     }
+    setTimeout(process, modelUpdateTime);
   }, function (err) { console.error(err); });
 
-  captureAndProcess = function(force) {
-    if (!updateVideo) return;
+  capture = function() {
+    if (calibrationMode) {
+      process();
+      setTimeout(capture, 100);
+      return;
+    }
+    topctx.drawImage(video, 0, 0, 560, 420);
+    if (videoUpdateTime > 0) {
+      setTimeout(capture, videoUpdateTime);
+    } else {
+      requestAnimationFrame(capture);
+    }
+  }
+
+  process = function() {
     var imgData, data, len, i, mask,
         r, g, b,
         inRange, image2, erodedImg,
         points, p;
-
-    topctx.drawImage(video, 0, 0, 560, 420);
-
-    if (!force && !calibrationMode) {
-      if (videoUpdateTime > 0) {
-        setTimeout(captureAndProcess, videoUpdateTime);
-      } else {
-        requestAnimationFrame(captureAndProcess);
-      }
-      return;
-    }
 
     ctx1.drawImage(video, 0, 0, 560, 420);
 
@@ -196,11 +201,9 @@ $(function() {
         ctx2.stroke();
       }
     }
-
-    if (videoUpdateTime > 0) {
-      setTimeout(captureAndProcess, videoUpdateTime);
-    } else {
-      requestAnimationFrame(captureAndProcess);
+    if (!calibrationMode) {
+      updateModel();
+      setTimeout(process, modelUpdateTime);
     }
   }
 
@@ -255,7 +258,6 @@ $(function() {
 showShapes = true
 
 updateModel = function() {
-  captureAndProcess(true);
   if (!contours.length) {
     return;
   }
@@ -278,10 +280,10 @@ updateModel = function() {
       if (!contour[j]) continue;
       x = contour[j].x * 9.6/560;
       y = contour[j].y * 7.2/420;
-      x = Math.min(x, 9);
-      y = Math.min(y, 7);
-      x = Math.max(x, 1);
-      y = Math.max(y, 1);
+      x = Math.min(x, 9.4);
+      y = Math.min(y, 7.1);
+      x = Math.max(x, 0.3);
+      y = Math.max(y, 0.3);
       vertices += x + ", " + y + ", ";
     }
     vertices = vertices.slice(0,-2);
