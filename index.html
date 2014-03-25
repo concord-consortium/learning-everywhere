@@ -11,8 +11,8 @@
     <link href='http://lab4.dev.concord.org/vendor/jquery-selectBoxIt/jquery.selectBoxIt.css' rel='stylesheet' type='text/css'>
     <link href='http://lab4.dev.concord.org/embeddable.css' rel='stylesheet' type='text/css'>
     <link href='http://lab-framework.concord.org/lab/lab.css' rel='stylesheet' type='text/css'>
-    <link href='e2d-style/jq-rangeslider/classic-min.css' rel='stylesheet' type='text/css'>
-    <link href='e2d-style/style.css' rel='stylesheet' type='text/css'>
+    <link href='style/jq-rangeslider/classic-min.css' rel='stylesheet' type='text/css'>
+    <link href='style/style.css' rel='stylesheet' type='text/css'>
     <script src='http://lab4.dev.concord.org/vendor/modernizr/modernizr.js' type='text/javascript'></script>
     <script type='text/javascript'>
       if (!Modernizr.svg) { window.location = 'browser-upgrade.html'; }
@@ -25,24 +25,24 @@
     <script src="http://lab4.dev.concord.org/vendor/jquery-selectBoxIt/jquery.selectBoxIt.js" type="text/javascript"></script>
     <script src='http://lab4.dev.concord.org/vendor/tinysort/jquery.tinysort.js' type='text/javascript'></script>
     <script src='http://lab-framework.concord.org/lab/lab.min.js' type='text/javascript'></script>
-    <script src="e2d-lib/jQRangeSlider-min.js"></script>
-    <script src="e2d-lib/hsvThreshold.js"></script>
-    <script src="e2d-lib/cv.js"></script>
-    <script src="e2d-lib/video-processing.js"></script>
+    <script src="lib/jQRangeSlider-min.js"></script>
+    <script src="lib/hsvThreshold.js"></script>
+    <script src="lib/cv.js"></script>
+    <script src="/video-processing.js"></script>
   </head>
   <body>
     <div id='interactive-container' tabindex='0' style="width: 600px; height: 495px"></div>
     <video id="live" width="560" height="420" style="display: none;" autoplay></video>
     <canvas id="topCanvas" width="560" height="420" style="left: 9px; top: 28px;"></canvas>
     <div style="position: absolute;top: 150px;left: 700px;">
-      <button id="updateModel" onclick="updateModel()">Update model</button><br/>
       <button id="calibrate" onclick="calibrate()">Calibrate video</button>
     </div>
     <div id="calibrations">
       <canvas id="canvas1" width="560" height="420"></canvas>
       <canvas id="canvas2" width="560" height="420"></canvas>
       <div class="calibration-set" style="clear: both;">
-        <h3 style="margin-bottom: -14px;">Color filtering</h3>
+        <h3 >Color filtering</h3>
+        <button id="sampling" onclick="toggleSample()">Start sampling</button><br/>
         <label style="clear: both">Hue</label>
         <div id="hue-values"></div>
         <div id="hue-slider"></div>
@@ -55,7 +55,7 @@
         <h3>Contour detection</h3>
         <input type="checkbox" name="checkbox" id="extra-erode-dilate" checked="checked" style="float: left; margin: 6px;">
         <label for="extra-erode-dilate" style="float: left;">Extra erode-dilate cycles (noise removal)</label>
-        <input type="checkbox" name="checkbox" id="approx-polygons" style="float: left; margin: 6px;">
+        <input type="checkbox" name="checkbox" id="approx-polygons" checked="checked" style="float: left; margin: 6px;">
         <label for="approx-polygons" style="float: left;">Approximate polygons (lower res)</label>
         <input type="checkbox" name="checkbox" id="convex-hull" style="float: left; margin: 6px;">
         <label for="convex-hull" style="float: left;">Convex Hull</label>

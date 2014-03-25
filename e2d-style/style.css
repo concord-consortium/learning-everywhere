@@ -16,17 +16,11 @@ header {
   top: 0;
   opacity: 0.6;
 }
+.sampling {
+  cursor: crosshair;
+}
 .e2d-part-shape-outline {
   stroke: rgba(0,0,0,0);
-}
-#editingcanvas {
-  position: relative;
-  pointer-events: none;
-  cursor: default;
-}
-#editingcanvas.editing {
-  pointer-events: all;
-  cursor: crosshair;
 }
 button {
   background: #3498db;
@@ -124,7 +118,7 @@ button.active {
 }
 #hue-values {
   position: absolute;
-  top: 502px;
+  top: 577px;
   width: 380px;
   height: 31px;
   margin-left: 15px;
