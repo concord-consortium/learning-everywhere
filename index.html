@@ -35,14 +35,14 @@
     <video id="live" width="560" height="420" style="display: none;" autoplay></video>
     <canvas id="topCanvas" width="760" height="570" style="left: 10px; top: 38px;"></canvas>
     <div style="position: absolute;top: 150px;left: 830px;">
-      <button id="calibrate" onclick="calibrate()">Calibrate video</button>
+      <span class="button" id="calibrate" onclick="calibrate()">Calibrate video</span>
     </div>
     <div id="calibrations">
       <canvas id="canvas1" width="560" height="420"></canvas>
       <canvas id="canvas2" width="560" height="420"></canvas>
       <div class="calibration-set" style="clear: both;">
         <h3 >Color filtering</h3>
-        <button id="sampling" onclick="toggleSample()">Start sampling</button><br/>
+        <span class="button" id="sampling" onclick="toggleSample()" style="left: 50px">Start sampling</span><br/>
         <label style="clear: both">Hue</label>
         <div id="hue-values"></div>
         <div id="hue-slider"></div>
@@ -60,7 +60,7 @@
         <input type="checkbox" name="checkbox" id="convex-hull" style="float: left; margin: 6px;">
         <label for="convex-hull" style="float: left;">Convex Hull</label>
       </div>
-      <button onclick="calibrate()">End calibration</button><br/>
+      <span class="button" onclick="calibrate()" style="left: 31px; top: 50px">End calibration</span><br/>
     </div>
     <script>
       (function() {
