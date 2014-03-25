@@ -59,9 +59,12 @@ self.onmessage = function (m) {
     }
 
     areaFilteredContours = [];
+    newLen = 0;
     for (i in contours) {
+      if (newLen > 15) break;
       area = CV.area(contours[i]);
       if (area > 1500 && area < 117600) {
+        newLen++;
         areaFilteredContours.push(contours[i]);
       }
     }
