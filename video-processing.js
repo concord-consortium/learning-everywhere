@@ -3,7 +3,7 @@ var updateVideo = true,
     sampling = false,
     contours = [],
     videoUpdateTime = 200,
-    modelUpdateTime = 3000,
+    modelUpdateTime = 4000,
     capture,
     process,
     updateModel,
@@ -22,7 +22,7 @@ function calibrate() {
   } else {
     videoUpdateTime = 200;
     calibrationMode = false;
-    setTimeout(process, modelUpdateTime);
+    setTimeout(process, 500);
   }
 }
 
@@ -53,8 +53,7 @@ function toggleSample() {
 
 $(function() {
 
-  var doUpdateModel = true,
-      video = document.querySelector('#live'),
+  var video = document.querySelector('#live'),
       ctx1 = canvas1.getContext('2d'),
       ctx2 = canvas2.getContext('2d'),
       topctx = topCanvas.getContext('2d'),
@@ -71,11 +70,6 @@ $(function() {
       minV = 0,
       maxV = 0.3,
       hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
-
-  setTimeout(function() {
-    script.onStart(function(){doUpdateModel = false});
-    script.onStop(function(){doUpdateModel = true});
-  }, 2000);
 
   // set up sliders
   hueSlider.rangeSlider({bounds: {min: 0, max: 360}, defaultValues: {min: minH, max: maxH}});
@@ -107,7 +101,7 @@ $(function() {
     } else {
       requestAnimationFrame(capture);
     }
-    setTimeout(process, modelUpdateTime);
+    setTimeout(process, 500);
   }, function (err) { console.error(err); });
 
   capture = function() {
@@ -123,7 +117,7 @@ $(function() {
       requestAnimationFrame(capture);
     }
   }
-
+  startTime = 0
   process = function() {
     var imgData, data, len, i, mask,
         r, g, b,
@@ -131,11 +125,17 @@ $(function() {
         points, p;
 
     if (!calibrationMode) {
-      setTimeout(process, modelUpdateTime);
+      ctx1.drawImage(video, 0, 0, 560, 420);
+      worker = new Worker("canvas-worker.js");
+      worker.onmessage = function(e) {
+        contours = e.data.result;
+        updateModel();
+        setTimeout(process, modelUpdateTime);
+      }
+      imgData = ctx1.getImageData(0, 0, 560, 420);
+      worker.postMessage({ data: imgData, minH: minH, maxH: maxH, minS: minS, maxS: maxS, minV: minV, maxV: maxV, extraErodeCheck: extraErodeCheck.checked, conxevHullCheck: conxevHullCheck.checked });
+      return;
     }
-
-    if (!doUpdateModel) return;
-    console.log("running!")
 
     ctx1.drawImage(video, 0, 0, 560, 420);
 
@@ -249,6 +249,13 @@ $(function() {
     _minV = Math.min(_minV, Math.max(0, Math.min(1, hsv[2]-0.05)));
     _maxV = Math.max(_maxV, Math.max(0, Math.min(1, hsv[2]+0.05)));
 
+    minH = _minH;
+    maxH = _maxH;
+    minS = _minS;
+    maxS = _maxS;
+    minV = _minV;
+    maxV = _maxV;
+
     hsvThreshold = new HSVThreshold(_minH, _maxH, _minS, _maxS, _minV, _maxV);
 
     function setSliders() {
@@ -276,6 +283,8 @@ updateModel = function() {
   var numObstacles = contours.length,
       numParts = script.getNumberOfParts(),
       contour, x, y, i, j;
+
+  script.getPart(0).temperature=60
 
   for (i = numParts-1; i > 0; i--) {
     if (script.getPart(i).thermal_conductivity == 0) {
@@ -307,8 +316,8 @@ updateModel = function() {
         "x": 0,
         "y": 0,
         "temperature": 0,
-        "constant_temperature": false,
-        "reflection": 100,
+        "constant_temperature": true,
+        "reflection": 0,
         "absorption": 0,
         "filled": false,
         "visible": showShapes,

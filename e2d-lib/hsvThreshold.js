@@ -1,4 +1,3 @@
-(function() {
 
   function rgb2hsv(r, g, b) {
     var min, max, delta, d, z,
@@ -60,7 +59,3 @@
         hsv[2] < this.minV ||
         hsv[2] > this.maxV);
   }
-
-  window.HSVThreshold = HSVThreshold;
-  window.rgb2hsv = rgb2hsv;
-})();
