@@ -53,7 +53,8 @@ function toggleSample() {
 
 $(function() {
 
-  var video = document.querySelector('#live'),
+  var doUpdateModel = true,
+      video = document.querySelector('#live'),
       ctx1 = canvas1.getContext('2d'),
       ctx2 = canvas2.getContext('2d'),
       topctx = topCanvas.getContext('2d'),
@@ -70,6 +71,11 @@ $(function() {
       minV = 0,
       maxV = 0.3,
       hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
+
+  setTimeout(function() {
+    script.onStart(function(){doUpdateModel = false});
+    script.onStop(function(){doUpdateModel = true});
+  }, 2000);
 
   // set up sliders
   hueSlider.rangeSlider({bounds: {min: 0, max: 360}, defaultValues: {min: minH, max: maxH}});
@@ -123,6 +129,13 @@ $(function() {
         r, g, b,
         inRange, image2, erodedImg,
         points, p;
+
+    if (!calibrationMode) {
+      setTimeout(process, modelUpdateTime);
+    }
+
+    if (!doUpdateModel) return;
+    console.log("running!")
 
     ctx1.drawImage(video, 0, 0, 560, 420);
 
@@ -203,7 +216,6 @@ $(function() {
     }
     if (!calibrationMode) {
       updateModel();
-      setTimeout(process, modelUpdateTime);
     }
   }
 
