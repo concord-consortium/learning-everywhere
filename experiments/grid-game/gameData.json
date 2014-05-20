@@ -68,22 +68,36 @@
     "progression": [
       {
         "industry": 20000,
-        "message": "Summers aren't so bad here in Montana!<p><b>Some industry has moved in!</b></p>"
+        "message": "Summers aren't so bad here in Montana.<p><b>Some industry has moved in!</b></p>"
       },
       {
-        "message": "<b>Today's forecast:</b> Winters are dark in Montana. You typically need 2 extra MW to keep your population happy."
+        "message": "<b>Today's forecast:</b> Winters are dark and people use their lights more. You will typically need 2 extra MW to keep your population happy."
       },
       {
+        "message": "",
         "populationNeeds": 1.5
+      },
+      {
+        "message": "<b>You can now connect to other grids!</b><p>Remember that both players must purchase power lines.</p><p>Your population has increased.</p>",
+        "populationNeeds": 1,
+        "population": 50000
+      },
+      {
+        "message": "<b>Some industry has moved in!</b>",
+        "industry": 30000
+      },
+      {
+        "message": ""
       }
     ]
   },
   "newengland": {
     "name": "New England",
-    "population": 80000,
+    "population": 70000,
     "populationNeeds": 1,
     "industry": 20000,
     "bank": 1e5,
+    "message": "<h3>Welcome to the Grid Game!</h3> <p>Your job is to keep your population happy.</p><p>If you need more power, you have to buy it from the grid. Later you will be able to trade with neighbors.</p><p><b>Today's forecast:</b> It's going to be a warm summer! You will typically need a little more power in the summer.</p>",
     "powerPlants": [
       {
         "type": "Small Coal",
@@ -95,14 +109,14 @@
         "type": "Solar Farm",
         "plant": true,
         "cost": 50,
-        "power": 2,
+        "power": 4,
         "time": 2
       },
       {
         "type": "Wind Farm",
         "plant": true,
         "cost": 60,
-        "power": 8,
+        "power": 3,
         "time": 3
       },
       {
@@ -145,7 +159,125 @@
     ],
     "progression": [
       {
-        "population": 100000
+        "populationNeeds": 1.1,
+        "message": "It's warm! You need a little more power than you did in the Spring."
+      },
+      {
+        "populationNeeds": 1,
+        "message": "<b>Today's forecast:</b> Winters are dark and people use their lights more. You will typically need 1 extra MW to keep your population happy."
+      },
+      {
+        "message": "It's a surprisingly cold and dark winter in New England! You'll need more power than expected...",
+        "populationNeeds": 1.5
+      },
+      {
+        "message": "<b>You can now connect to other grids!</b><p>Remember that both players must purchase power lines.</p><p>Your population has increased.</p>",
+        "populationNeeds": 1,
+        "population": 80000
+      },
+      {
+        "message": "<b>Some industry has moved in!</b>",
+        "industry": 40000
+      },
+      {
+        "message": ""
+      }
+    ]
+  },
+  "arizona": {
+    "name": "Arizona",
+    "population": 40000,
+    "populationNeeds": 1,
+    "industry": 20000,
+    "bank": 1e5,
+    "message": "<h3>Welcome to the Grid Game!</h3> <p>Your job is to keep your population happy.</p><p><b>Today's forecast:</b> It's going to be a hot summer! You will typically need twice as much power in the summer.</p>",
+    "powerPlants": [
+      {
+        "type": "Solar Farm",
+        "power": 7
+      }
+    ],
+    "costs": [
+      {
+        "type": "Solar Farm",
+        "plant": true,
+        "cost": 50,
+        "power": 7,
+        "time": 2
+      },
+      {
+        "type": "Wind Farm",
+        "plant": true,
+        "cost": 60,
+        "power": 3,
+        "time": 3
+      },
+      {
+        "type": "Small Coal",
+        "plant": true,
+        "cost": 50,
+        "power": 5,
+        "time": 3
+      },
+      {
+        "type": "Large Coal",
+        "plant": true,
+        "cost": 100,
+        "power": 12,
+        "time": 4
+      },
+      {
+        "type": "Efficiencies",
+        "cost": 30,
+        "efficiency": 1,
+        "time": 0
+      },
+      {
+        "type": "Power line",
+        "cost": 5,
+        "time": 0
+      },
+      {
+        "type": "from the Grid",
+        "cost": 10,
+        "power": 1,
+        "time": 0
+      },
+      {
+        "type": "from the Grid for next season",
+        "cost": 6,
+        "power": 1,
+        "delay": true
+      }
+    ],
+    "progression": [
+      {
+        "populationNeeds": 2,
+        "message": "It's a scorcher!<p>If you need more power, you have to buy it from the grid. Later you will be able to trade with neighbors.</p>"
+      },
+      {
+        "populationNeeds": 1,
+        "message": "<b>Today's forecast:</b> Winters are dark and people use their lights more. You will typically need 1 extra MW to keep your population happy."
+      },
+      {
+        "message": "<b>Your solar farms don't produce as much in the winter!</b> They are producing at about 50% capacity. Remove power tokens so you have the number shown at top.",
+        "populationNeeds": 1.25,
+        "solarEfficiency":0.45
+      },
+      {
+        "message": "<b>You can now connect to other grids!</b><p>Remember that both players must purchase power lines.</p><p>Your population has increased.</p><p><b>Today's forecast:</b> Looks like another really hot summer ahead...</p>",
+        "populationNeeds": 1,
+        "population": 50000,
+        "solarEfficiency":1
+      },
+      {
+        "message": "Uh oh, it's a super-scorcher!",
+        "populationNeeds": 2.4
+      },
+      {
+        "populationNeeds": 1,
+        "message": "<b>Some industry has moved in!</b>",
+        "industry": 40000
       }
     ]
   }
