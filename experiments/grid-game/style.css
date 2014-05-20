@@ -1,0 +1,128 @@
+h1, #date {
+  padding-left: 50px;
+}
+#message {
+  position: absolute;
+  top: 183px;
+  left: 50px;
+  width: 300px;
+  border: 2px solid #AAA;
+  border-radius: 5px;
+  background-color: #EEE;
+  padding: 10px;
+  box-shadow: 0 0 50px rgba(40, 106, 128, 0.64);
+}
+#message button {
+  margin: 10px;
+}
+#date {
+  margin-top: -19px;
+}
+
+#stats {
+  position: relative;
+  height: 50px;
+  margin-top: 11px;
+}
+#stats div {
+  position: absolute;
+}
+#population {
+}
+#power {
+  left: 250px;
+  font-weight: bold;
+}
+#industry {
+  top: 20px;
+}
+#bank {
+  top: 20px;
+  left: 250px;
+  font-weight: bold;
+}
+#sad-faces {
+  top: 40px;
+  left: 250px;
+  font-weight: bold;
+  color: red;
+}
+
+#no-industry {
+  position: relative;
+  top: 10px;
+  left: 20px;
+}
+
+.power-need {
+  width: 40px;
+  height: 40px;
+  border: 1px solid black;
+  float: left;
+  margin-right: -1px;
+  background-color: #CCC;
+  color: #EEE;
+  font-size: 34px;
+  text-align: center;
+}
+.power-need:nth-child(3) {
+  background-color: #444;
+}
+.power-need.selected {
+  background-color: #444;
+}
+.power-need.efficient {
+  border-color: #DDD;
+  background-color: #DCDCDC;
+}
+.power-need.efficient.first {
+  border-left: #000 solid 1px;
+}
+.needs-container, #buying-container {
+  overflow: hidden;
+  width: 485px;
+}
+.buy {
+  border: 1px solid black;
+  width: 143px;
+  height: 118px;
+  padding: 1px;
+  float: left;
+  text-align: center;
+  background-color: #EEE;
+  border-radius: 10px;
+  margin: 2px;
+}
+.buy p {
+  font-weight: bold;
+}
+.buy table {
+  text-align: right;
+  width:100%;
+}
+.buy table td:nth-child(2) {
+  text-align: center;
+}
+#power-plants {
+  border: 1px solid #BBB;
+  width: 300px;
+  margin: 5px;
+  padding: 5px;
+}
+#power-plants h2 {
+  position: relative;
+  top: -18px;
+}
+#power-plants table {
+  margin-top: -10px;
+}
+.fail {
+  color: red;
+}
+.success {
+  color: green;
+}
+button {
+  padding: 10px;
+  font-size: 1.5em;
+}

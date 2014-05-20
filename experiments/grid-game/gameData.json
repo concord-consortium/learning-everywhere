@@ -1,0 +1,153 @@
+{
+  "montana": {
+    "name": "Montana",
+    "population": 40000,
+    "populationNeeds": 1,
+    "industry": 0,
+    "bank": 1e5,
+    "powerPlants": [
+      {
+        "type": "Small Coal",
+        "power": 5
+      }
+    ],
+    "message": "<h3>Welcome to the Grid Game!</h3> <p>Your job is to keep your population happy.</p><p><b>Today's forecast:</b> It's going to be a cool summer.</p>",
+    "costs": [
+      {
+        "type": "Solar Farm",
+        "plant": true,
+        "cost": 50,
+        "power": 2,
+        "time": 2
+      },
+      {
+        "type": "Wind Farm",
+        "plant": true,
+        "cost": 60,
+        "power": 8,
+        "time": 3
+      },
+      {
+        "type": "Small Coal",
+        "plant": true,
+        "cost": 50,
+        "power": 5,
+        "time": 3
+      },
+      {
+        "type": "Large Coal",
+        "plant": true,
+        "cost": 100,
+        "power": 12,
+        "time": 4
+      },
+      {
+        "type": "Efficiencies",
+        "cost": 30,
+        "efficiency": 1,
+        "time": 0
+      },
+      {
+        "type": "Power line",
+        "cost": 5,
+        "time": 0
+      },
+      {
+        "type": "from the Grid",
+        "cost": 10,
+        "power": 1,
+        "time": 0
+      },
+      {
+        "type": "from the Grid for next season",
+        "cost": 6,
+        "power": 1,
+        "delay": true
+      }
+    ],
+    "progression": [
+      {
+        "industry": 20000,
+        "message": "Summers aren't so bad here in Montana!<p><b>Some industry has moved in!</b></p>"
+      },
+      {
+        "message": "<b>Today's forecast:</b> Winters are dark in Montana. You typically need 2 extra MW to keep your population happy."
+      },
+      {
+        "populationNeeds": 1.5
+      }
+    ]
+  },
+  "newengland": {
+    "name": "New England",
+    "population": 80000,
+    "populationNeeds": 1,
+    "industry": 20000,
+    "bank": 1e5,
+    "powerPlants": [
+      {
+        "type": "Small Coal",
+        "power": 5
+      }
+    ],
+    "costs": [
+      {
+        "type": "Solar Farm",
+        "plant": true,
+        "cost": 50,
+        "power": 2,
+        "time": 2
+      },
+      {
+        "type": "Wind Farm",
+        "plant": true,
+        "cost": 60,
+        "power": 8,
+        "time": 3
+      },
+      {
+        "type": "Small Coal",
+        "plant": true,
+        "cost": 50,
+        "power": 5,
+        "time": 3
+      },
+      {
+        "type": "Large Coal",
+        "plant": true,
+        "cost": 100,
+        "power": 12,
+        "time": 4
+      },
+      {
+        "type": "Efficiencies",
+        "cost": 30,
+        "efficiency": 1,
+        "time": 0
+      },
+      {
+        "type": "Power line",
+        "cost": 5,
+        "time": 0
+      },
+      {
+        "type": "from the Grid",
+        "cost": 10,
+        "power": 1,
+        "time": 0
+      },
+      {
+        "type": "from the Grid for next season",
+        "cost": 6,
+        "power": 1,
+        "delay": true
+      }
+    ],
+    "progression": [
+      {
+        "population": 100000
+      }
+    ]
+  }
+}
+
