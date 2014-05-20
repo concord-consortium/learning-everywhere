@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Grid Game</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <script type="text/x-handlebars" id="index">
+        {{#with GG.gameController}}
+        <h1>{{name}}</h1>
+        {{#with GG.dateController}}
+        <div id="date">
+          {{dateString}}
+        </div>
+        {{/with}}
+        <div id="stats">
+          <div id="population">
+            Population: {{population}}
+          </div>
+          <div id="industry">
+            Industry: {{industry}}
+          </div>
+          <div id="power">
+            Power: {{power}} MW
+          </div>
+          <div id="bank">
+            Bank: {{moneyAsString}}
+          </div>
+          {{#if sadFaces}}
+          <div id="sad-faces">
+            Sad faces: {{sadFaces}}
+          </div>
+          {{/if}}
+        </div>
+        <div id="population-needs">
+          <p>
+            Population power need: {{powerNeededByPopulationString}} MW.
+            <div class="needs-container">
+              {{#each populationNeedsArray}}
+              {{view GG.NeedView content=this}}
+              {{/each}}
+            </div>
+          </p>
+        </div>
+        <div id="industry-needs">
+          <p>
+            Industry power need: {{powerNeededByIndustryString}} MW. (You earn $5000/MW)
+            <div class="needs-container">
+              {{#each industryNeedsArray}}
+              {{view GG.NeedView content=this}}
+              {{/each}}
+              {{#unless industry}}
+              <div id="no-industry">You have no industry here yet.</div>
+              {{/unless}}
+            </div>
+          </p>
+        </div>
+        <div id="sell-back">
+          <p>
+            Sell back to the grid: up to {{power}} MW. ($2000/MW)
+            <div class="needs-container">
+              {{#each extraPowerArray}}
+              {{view GG.NeedView content=this}}
+              {{/each}}
+            </div>
+          </p>
+        </div>
+        <div id="buying-container">
+          {{#each costs}}
+          <div class="buy" {{action buy this}}>
+            <p>Buy {{type}}<br/>
+            {{#if power}}
+            {{power}} MW</p>
+            {{/if}}
+            <table>
+              <tr><td>Cost:</td><td>${{cost}}k</td></tr>
+              {{#if time}}<tr><td>Time:</td><td>{{time}} seasons</td></tr>{{/if}}
+            </table>
+          </div>
+          {{/each}}
+        </div>
+        <div id="power-plants">
+          <h2>Power Plants:</h2>
+            <table>
+              {{#each powerPlants}}
+              <tr>
+                <td>{{type}}</td>
+                <td>{{power}} MW</td>
+                {{#if time}}
+                <td>ready in {{time}} seasons</td>
+                {{/if}}
+              </tr>
+              {{/each}}
+            </table>
+        </div>
+        <div>
+          <button {{action "endTurn"}}>End turn</button>
+        </div>
+        {{#if message}}
+        <div id="message">
+          <div>
+            {{{message}}}
+          </div>
+          <button {{action "hideMessage"}}>Ok!</button>
+        </div>
+        {{/if}}
+        {{/with}}
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.1.2/handlebars.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/ember.js/1.5.1/ember.js"></script>
+    <script type="text/javascript" src="app.js"></script>
+  </body>
+</html>

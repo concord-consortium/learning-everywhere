@@ -11,7 +11,8 @@
     <link href='http://lab4.dev.concord.org/vendor/jquery-selectBoxIt/jquery.selectBoxIt.css' rel='stylesheet' type='text/css'>
     <link href='http://lab4.dev.concord.org/embeddable.css' rel='stylesheet' type='text/css'>
     <link href='http://lab-framework.concord.org/lab/lab.css' rel='stylesheet' type='text/css'>
-    <link href='style/energy2d-style.css' rel='stylesheet' type='text/css'>
+    <link href='style/jq-rangeslider/classic-min.css' rel='stylesheet' type='text/css'>
+    <link href='style/style.css' rel='stylesheet' type='text/css'>
     <script src='http://lab4.dev.concord.org/vendor/modernizr/modernizr.js' type='text/javascript'></script>
     <script type='text/javascript'>
       if (!Modernizr.svg) { window.location = 'browser-upgrade.html'; }
@@ -24,23 +25,43 @@
     <script src="http://lab4.dev.concord.org/vendor/jquery-selectBoxIt/jquery.selectBoxIt.js" type="text/javascript"></script>
     <script src='http://lab4.dev.concord.org/vendor/tinysort/jquery.tinysort.js' type='text/javascript'></script>
     <script src='http://lab-framework.concord.org/lab/lab.min.js' type='text/javascript'></script>
-    <script src='model-editing.js' type='text/javascript'></script>
+    <script src="lib/jQRangeSlider-min.js"></script>
+    <script src="lib/hsvThreshold.js"></script>
+    <script src="lib/cv.js"></script>
+    <script src="/video-processing.js"></script>
   </head>
   <body>
     <div id='interactive-container' tabindex='0' style="width: 600px; height: 495px"></div>
     <video id="live" width="560" height="420" style="display: none;" autoplay></video>
-    <canvas id="canvas" width="560" height="420" style="display: none;"></canvas>
-    <canvas id="canvas2" width="560" height="420" style="left: 9px; top: 28px;"></canvas>
+    <canvas id="topCanvas" width="560" height="420" style="left: 9px; top: 28px;"></canvas>
     <div style="position: absolute;top: 150px;left: 700px;">
-      <input type="checkbox" id="update-model-check" onclick="toggleUpdateModel()"></input>
-      <label for="update-model-check" style="font-size: 1em;">Update model from video</label><br/>
-      <input type="checkbox" id="shapes-check" onclick="toggleShowShapes()"></input>
-      <label for="shapes-check" style="font-size: 1em;">Show shapes</label><br/>
-      <button id="save" onclick="saveModel()">Save model</button><br/>
-      <a id="saved-model-link" href="load-saved-model.html" style="display: none;">Open saved model</a>
+      <button id="calibrate" onclick="calibrate()">Calibrate video</button>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/video-processing.js"></script>
+    <div id="calibrations">
+      <canvas id="canvas1" width="560" height="420"></canvas>
+      <canvas id="canvas2" width="560" height="420"></canvas>
+      <div class="calibration-set" style="clear: both;">
+        <h3 >Color filtering</h3>
+        <button id="sampling" onclick="toggleSample()">Start sampling</button><br/>
+        <label style="clear: both">Hue</label>
+        <div id="hue-values"></div>
+        <div id="hue-slider"></div>
+        <label style="padding-top: 9px;">Saturation</label>
+        <div id="saturation-slider"></div>
+        <label>Value</label>
+        <div id="value-slider"></div>
+      </div>
+      <div class="calibration-set">
+        <h3>Contour detection</h3>
+        <input type="checkbox" name="checkbox" id="extra-erode-dilate" checked="checked" style="float: left; margin: 6px;">
+        <label for="extra-erode-dilate" style="float: left;">Extra erode-dilate cycles (noise removal)</label>
+        <input type="checkbox" name="checkbox" id="approx-polygons" checked="checked" style="float: left; margin: 6px;">
+        <label for="approx-polygons" style="float: left;">Approximate polygons (lower res)</label>
+        <input type="checkbox" name="checkbox" id="convex-hull" style="float: left; margin: 6px;">
+        <label for="convex-hull" style="float: left;">Convex Hull</label>
+      </div>
+      <button onclick="calibrate()">End calibration</button><br/>
+    </div>
     <script>
       (function() {
         window.interactiveController = new Lab.InteractivesController(
@@ -51,18 +72,12 @@
               {
                 "type": "energy2d",
                 "id": "model",
-                "url": "learning-everywhere/energy2d-model.json"
+                "url": "energy2d-model.json"
               }
             ]
           },
           '#interactive-container');
       }());
-
-      $(function() {
-        $.getJSON('saved-e2d-model.json', function(model) {
-            window.interactiveController.loadModel("model", model)
-        });
-      })
     </script>
   </body>
 </html>
