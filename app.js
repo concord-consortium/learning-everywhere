@@ -16,6 +16,7 @@ GG.Place = Em.Object.extend({
   cumulativePopulationSatisfied: 0,
   prepurchasedPower: 0,
   excessPowerSold: 0,
+  solarEfficiency: 1,
   sadFaces: 0,
   turn: 0
 });
@@ -136,12 +137,16 @@ GG.GameController = Em.ObjectController.extend({
       for (i  = 0, ii = powerPlants.length; i<ii; i++) {
         p = powerPlants[i];
         if (!p.time) {
-          power += p.power;
+          if (p.type == "Solar Farm") {
+            power += Math.round(p.power * this.get("solarEfficiency"));
+          } else {
+            power += p.power;
+          }
         }
       }
       power += this.get('additionalPower');
       return power;
-    }.property('powerPlants', 'additionalPower'),
+    }.property('powerPlants', 'additionalPower', 'solarEfficiency'),
 
     buy: function(item) {
       var cost = item.cost * 1000,
