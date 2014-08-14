@@ -250,10 +250,15 @@ window.serializeModel = ->
   ###
   JSON.stringify json
 
+window.getModelHash = ->
+  window.btoa window.serializeModel()
+
+window.getModelURL = ->
+  publicModelUrl + "#" + getModelHash()
+
 window.saveModelURL = ->
-  json = window.serializeModel()
-  encoded = window.btoa json
-  url = publicModelUrl + "#" + encoded
+  url = getModelURL()
+
   document.getElementById("saveUrl").innerHTML =
     "<a href='#{url}'>Link</a>"
 
@@ -355,3 +360,4 @@ if document.getElementById('add-village-btn')
   document.getElementById('move-btn').addEventListener 'click', ->
     setMouseMode 'move'
 
+window.modelLoaded?()
