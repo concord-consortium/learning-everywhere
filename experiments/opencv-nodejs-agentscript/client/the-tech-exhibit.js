@@ -13,7 +13,7 @@ window.modelLoaded = function() {
 
   function getCanonicalURL() {
     // returns canonical url, which may have a different host name than the current
-    return publicModelUrl + "#" + document.location.hash;
+    return publicModelUrl + document.location.hash;
   }
 
   socket = io('http://localhost:8081/');
