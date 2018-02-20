@@ -15,19 +15,16 @@ This data is then passed to AgentScript in order to add agents.
 
 # Usage
 
-Install OpenCV. Use node 0.10.20
+Install OpenCV (using v2, since v3 is not yet fully-supported):
+
+`brew install opencv@2`
+`brew link --force opencv@2`
+
+Install prerequiste modules
 
 `npm install`
 
-If npm complains that it can't find opencv.pc, you will need to set the
-PKG_CONFIG_PATH variable to the location of folder containing opencv.pc.
-
-`$ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig`
-
-You can add this to ~/.bashprofile
-
-Even after this, on my machine (OS X 10.6.8) using node 0.10.20 I get an
-error that cb() is never called, but this doesn't seem to affect the application.
+Launch a web server
 
 `coffee app.coffee`
 
