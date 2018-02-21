@@ -23,7 +23,7 @@ THE SOFTWARE.
 /*
 References:
 - "OpenCV: Open Computer Vision Library"
-  http://sourceforge.net/projects/opencvlibrary/
+  https://sourceforge.net/projects/opencvlibrary/
 */
 
 var CV = CV || {};
