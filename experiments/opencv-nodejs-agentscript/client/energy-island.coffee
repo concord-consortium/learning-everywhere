@@ -1,5 +1,5 @@
 u = ABM.util # ABM.util alias, u.s is also ABM.shape accessor.
-window.publicModelUrl = 'http://concord-consortium.github.io/learning-everywhere/energy-island.html'
+window.publicModelUrl = 'https://concord-consortium.github.io/learning-everywhere/energy-island.html'
 
 shapeOffsets =
   village: [-30, -50]

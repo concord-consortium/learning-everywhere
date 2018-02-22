@@ -16,7 +16,7 @@ window.modelLoaded = function() {
     return publicModelUrl + document.location.hash;
   }
 
-  socket = io('http://localhost:8081/');
+  socket = io('https://localhost:8081/');
 
   socket.on('request-url', function() {
     updateHash();
@@ -25,8 +25,8 @@ window.modelLoaded = function() {
 
   socket.on('error-saving-url', function (errorMsg  ) {
     // alert the error - eventually, should do with Foundation
-    // see http://stackoverflow.com/questions/21681416/dynamic-alert-box-with-foundation
-    // and http://foundation.zurb.com/docs/components/alert_boxes.html
+    // see https://stackoverflow.com/questions/21681416/dynamic-alert-box-with-foundation
+    // and https://foundation.zurb.com/docs/components/alert_boxes.html
 
     alert("the model couldn't be saved: " + errorMsg);
   });
