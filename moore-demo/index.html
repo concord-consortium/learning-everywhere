@@ -42,7 +42,10 @@
       <canvas id="canvas2" width="560" height="420"></canvas>
       <div class="calibration-set" style="clear: both;">
         <h3 >Color filtering</h3>
-        <button id="sampling" onclick="toggleSample()">Start sampling</button><br/>
+        <ul id="materialList"></ul>
+        <button id="resetSampling" onclick="toggleSample()">Reset sampling</button><br/>
+
+        <div id="selectedMaterial"><span>Selected material: </span><span id="currentSelectedMaterial">None</span></div>
         <label style="clear: both">Hue</label>
         <div id="hue-values"></div>
         <div id="hue-slider"></div>
