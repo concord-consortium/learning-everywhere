@@ -1,9 +1,8 @@
 var updateVideo = true,
     calibrationMode = false,
     sampling = false,
-    contours = [],
     videoUpdateTime = 200,
-    modelUpdateTime = 3000,
+    modelUpdateTime = 30000,
     capture,
     process,
     updateModel,
@@ -21,7 +20,34 @@ var updateVideo = true,
 var defaultHSV = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
 
 function buildMaterialList() {
-  let materialNames = ["Wood", "Stone", "Metal", "Fiberglass"];
+  let materialNames = ["Wood", "Stone", "Metal"];
+  let materialDefinitions = [{
+    "temperature": 0,
+    "constant_temperature": false,
+    "reflection": 0,
+    "absorption": 1,
+    "thermal_conductivity": 0.12,
+    "specific_heat": 1400,
+    "density": 500
+  },
+  {
+    "temperature": 0,
+    "constant_temperature": false,
+    "reflection": 0,
+    "absorption": 1,
+    "thermal_conductivity": 1.7,
+    "specific_heat": 750,
+    "density": 2400
+  },
+  {
+    "temperature": 0,
+    "constant_temperature": false,
+    "reflection": 0,
+    "absorption": 1,
+    "thermal_conductivity": 40,
+    "specific_heat": 450,
+    "density": 7900
+  }];
   for (let i = 0; i < materialNames.length; i++) {
     let materialItem = document.createElement('li');
     document.getElementById('materialList').appendChild(materialItem);
@@ -43,6 +69,8 @@ function buildMaterialList() {
 
     // pre-create entries in material list for each type
     materials.push({
+      name: materialNames[i],
+      properties: materialDefinitions[i],
       hsv: rgb2hsv(0, 0, 0),
       hsvThreshold: new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
     });
@@ -211,65 +239,71 @@ $(function () {
 
     imgData = ctx1.getImageData(0, 0, videoWidth, videoHeight);
     data = imgData.data;
-    mask = new CV.Image(videoWidth,videoHeight);
-    len = data.length;
-    i = 0;
 
-    // filter pixels to HSV thresholds
-    // mask.data is a data array where every element is 255 or a 0, for a pixel
-    // that is white or black. It will be expanded into an array that can
-    // be drawn in the canvas just before we draw it, but CV.js uses this
-    // simpler array for fastert data processing
-    while (i < len) {
-      r = data[i];
-      g = data[i+1];
-      b = data[i+2];
-      inRange = materials[materialIdx].hsvThreshold.testPixel(r, g, b);
-      if (inRange) {
-        mask.data.push(255);
-      } else {
-        mask.data.push(0);
+    // make a mask for each material
+    for (let m = 0; m < materials.length; m++) {
+      mask = new CV.Image(videoWidth, videoHeight);
+      len = data.length;
+      i = 0;
+
+      // filter pixels to HSV thresholds
+      // mask.data is a data array where every element is 255 or a 0, for a pixel
+      // that is white or black. It will be expanded into an array that can
+      // be drawn in the canvas just before we draw it, but CV.js uses this
+      // simpler array for fastert data processing
+      while (i < len) {
+        r = data[i];
+        g = data[i + 1];
+        b = data[i + 2];
+        inRange = materials[m].hsvThreshold.testPixel(r, g, b);
+        if (inRange) {
+          mask.data.push(255);
+        } else {
+          mask.data.push(0);
+        }
+        i += 4;
       }
-      i += 4;
-    }
 
-    // draw filtered images to canvas 2
-    //image2 = createDrawableImage(mask, canvas2.getContext('2d').getImageData(0, 0, videoWidth, videoHeight));
-    //ctx2.putImageData(image2, 0, 0);
+      // draw filtered images to canvas 2
+      //image2 = createDrawableImage(mask, canvas2.getContext('2d').getImageData(0, 0, videoWidth, videoHeight));
+      //ctx2.putImageData(image2, 0, 0);
 
-    // erode-dilate several times to remove imperfections
-    erodedImg = new CV.Image();
-    CV.erode(mask, erodedImg);
-    CV.dilate(erodedImg, mask);
-
-    if (extraErodeCheck.checked) {
-      CV.dilate(mask, erodedImg);
-      CV.dilate(erodedImg, mask);
+      // erode-dilate several times to remove imperfections
+      erodedImg = new CV.Image();
       CV.erode(mask, erodedImg);
-      CV.erode(erodedImg, mask);
-    }
+      CV.dilate(erodedImg, mask);
 
-    // draw image to canvas 2
-    image2 = createDrawableImage(mask, ctx2.getImageData(0, 0, videoWidth, videoHeight));
-    ctx2.putImageData(image2, 0, 0);
-
-    // find contours and draw to canvas 3
-    contours = CV.findContours(mask);
-
-    if (true || approxPolygonsCheck.checked) {
-      for (i in contours) {
-        contours[i] = CV.approxPolyDP(contours[i], 4);
+      if (extraErodeCheck.checked) {
+        CV.dilate(mask, erodedImg);
+        CV.dilate(erodedImg, mask);
+        CV.erode(mask, erodedImg);
+        CV.erode(erodedImg, mask);
       }
-    }
 
-    if (conxevHullCheck.checked) {
-      for (i in contours) {
-        contours[i] = CV.convexHull(contours[i]);
+      // draw image to canvas 2
+      image2 = createDrawableImage(mask, ctx2.getImageData(0, 0, videoWidth, videoHeight));
+      ctx2.putImageData(image2, 0, 0);
+
+      // find contours and draw to canvas 3
+      let contours = CV.findContours(mask);
+
+      if (true || approxPolygonsCheck.checked) {
+        for (i in contours) {
+          contours[i] = CV.approxPolyDP(contours[i], 4);
+        }
       }
+
+      if (conxevHullCheck.checked) {
+        for (i in contours) {
+          contours[i] = CV.convexHull(contours[i]);
+        }
+      }
+      if (materials) materials[m].contours = contours;
     }
 
-    for (i in contours) {
-      points = contours[i];
+    for (i in materials[materialIdx].contours) {
+
+      points = materials[materialIdx].contours[i];
 
       if (points && points.length) {
         ctx2.beginPath();
@@ -285,7 +319,10 @@ $(function () {
       }
     }
     if (!calibrationMode) {
-      updateModel();
+      for (let i = 0; i < materials.length; i++) {
+        materialIdx = i;
+        updateModel();
+      }
       setTimeout(process, modelUpdateTime);
     }
   }
@@ -314,10 +351,9 @@ $(function () {
     //let rgb =
     hsv = rgb2hsv(p[0], p[1], p[2]);
     let threshold = getHSVThreshold(hsv);//new HSVThreshold(_minH, _maxH, _minS, _maxS, _minV, _maxV);
-    materials[materialIdx] = {
-      hsv,
-      hsvThreshold: threshold
-    };
+    materials[materialIdx].hsv = hsv;
+    materials[materialIdx].hsvThreshold = threshold;
+
     document.getElementById('samplePreview' + materialIdx).style = "background-color:" + rgbToHex(p[0], p[1], p[2]);
 
     setTimeout(setSliders, 50);
@@ -329,7 +365,10 @@ $(function () {
 
 showShapes = true
 
-updateModel = function() {
+updateModel = function () {
+  let props = materials[materialIdx].properties;
+  let contours = materials[materialIdx].contours;
+
   if (!contours.length) {
     return;
   }
@@ -366,14 +405,14 @@ updateModel = function() {
         "shapeType": "polygon",
         "x": 0,
         "y": 0,
-        "temperature": 0,
-        "constant_temperature": false,
-        "reflection": 100,
-        "absorption": 0,
+        "temperature": props.temperature,
+        "constant_temperature": props.constant_temperature,
+        "reflection": props.reflection,
+        "absorption": props.absorption,
         "filled": false,
         "visible": showShapes,
-        "thermal_conductivity": 0,
-        "specific_heat": 1000000,
+        "thermal_conductivity": props.thermal_conductivity,
+        "specific_heat": props.specific_heat,
         "vertices": vertices
       })
   }
