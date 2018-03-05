@@ -167,3 +167,10 @@ li button{
   margin-left:20px;
 
 }
+#canvas1{
+  cursor: default;
+}
+
+#canvas1.sampling{
+  cursor:crosshair;
+}

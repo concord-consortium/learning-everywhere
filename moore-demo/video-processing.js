@@ -14,9 +14,10 @@ var updateVideo = true,
     _minV = Infinity,
     _maxV = 0,
     materials = [],
-    materialIdx = 0,
+  materialIdx = 0,
     videoWidth = 560,
   videoHeight = 420;
+
 
 function buildMaterialList() {
   let materialNames = ["Wood", "Stone", "Metal", "Fiberglass"];
@@ -31,7 +32,7 @@ function buildMaterialList() {
 
     let sampleButton = document.createElement('button');
     sampleButton.innerText = "Sample";
-    sampleButton.addEventListener('click', () => toggleSample(i));
+    sampleButton.addEventListener('click', () => toggleSample(i+1));
     materialItem.appendChild(sampleButton);
 
     let sampleColor = document.createElement('div');
@@ -95,12 +96,13 @@ function offsetY(evt, target) {
 }
 
 function toggleSample(idx) {
+
   if (idx) {
-    materialIdx = idx;
+    console.log("toggle " + idx);
+    materialIdx = idx-1;
     sampling = true;
     if (!canvas1.classList.contains("sampling")) {
       canvas1.classList.add('sampling');
-      document.getElementById('sampling').innerHTML = "Reset sampling";
     } else {
       canvas1.classList.remove('sampling');
       _minH = Infinity,
@@ -124,22 +126,24 @@ $(function () {
   buildMaterialList();
 
   var video = document.querySelector('#live'),
-      ctx1 = canvas1.getContext('2d'),
-      ctx2 = canvas2.getContext('2d'),
-      topctx = topCanvas.getContext('2d'),
-      hueSlider = $('#hue-slider'),
-      satSlider = $('#saturation-slider'),
-      valSlider = $('#value-slider'),
-      extraErodeCheck = document.getElementById('extra-erode-dilate'),
-      approxPolygonsCheck = document.getElementById('approx-polygons'),
-      conxevHullCheck = document.getElementById('convex-hull'),
-      minH = 0,
-      maxH = 360,
-      minS = 0,
-      maxS = 1,
-      minV = 0,
-      maxV = 0.3,
-      hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
+    ctx1 = canvas1.getContext('2d'),
+    ctx2 = canvas2.getContext('2d'),
+    topctx = topCanvas.getContext('2d'),
+    hueSlider = $('#hue-slider'),
+    satSlider = $('#saturation-slider'),
+    valSlider = $('#value-slider'),
+    extraErodeCheck = document.getElementById('extra-erode-dilate'),
+    approxPolygonsCheck = document.getElementById('approx-polygons'),
+    conxevHullCheck = document.getElementById('convex-hull'),
+    minH = 0,
+    maxH = 360,
+    minS = 0,
+    maxS = 1,
+    minV = 0,
+    maxV = 0.3;
+
+  materials[materialIdx].hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
+  //hsvThreshold = materials[materialIdx].hsvThreshold;
 
   // set up sliders
   hueSlider.rangeSlider({bounds: {min: 0, max: 360}, defaultValues: {min: minH, max: maxH}});
@@ -154,7 +158,8 @@ $(function () {
     minV = $("#value-slider").rangeSlider("min") / 100;
     maxV = $("#value-slider").rangeSlider("max") / 100;
 
-    hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
+    materials[materialIdx].hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
+    //hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
   });
 
   // request video
@@ -211,7 +216,7 @@ $(function () {
       r = data[i];
       g = data[i+1];
       b = data[i+2];
-      inRange = hsvThreshold.testPixel(r, g, b);
+      inRange = materials[materialIdx].hsvThreshold.testPixel(r, g, b);
       if (inRange) {
         mask.data.push(255);
       } else {
@@ -300,10 +305,10 @@ $(function () {
     p = ctx1.getImageData(x, y, 1, 1).data;
     //let rgb =
     hsv = rgb2hsv(p[0], p[1], p[2]);
-    hsvThreshold = getHSVThreshold(hsv);//new HSVThreshold(_minH, _maxH, _minS, _maxS, _minV, _maxV);
+    let threshold = getHSVThreshold(hsv);//new HSVThreshold(_minH, _maxH, _minS, _maxS, _minV, _maxV);
     materials[materialIdx] = {
       hsv,
-      hsvThreshold
+      hsvThreshold: threshold
     };
     document.getElementById('samplePreview' + materialIdx).style = "background-color:" + rgbToHex(p[0], p[1], p[2]);
 
