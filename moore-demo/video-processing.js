@@ -7,17 +7,18 @@ var updateVideo = true,
     capture,
     process,
     updateModel,
-    _minH = Infinity,
-    _maxH = 0,
-    _minS = Infinity,
-    _maxS = 0,
-    _minV = Infinity,
-    _maxV = 0,
+    minH = Infinity,
+    maxH = 0,
+    minS = Infinity,
+    maxS = 0,
+    minV = Infinity,
+    maxV = 0,
     materials = [],
-  materialIdx = 0,
+    materialIdx = 0,
     videoWidth = 560,
-  videoHeight = 420;
+    videoHeight = 420;
 
+var defaultHSV = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
 
 function buildMaterialList() {
   let materialNames = ["Wood", "Stone", "Metal", "Fiberglass"];
@@ -43,7 +44,7 @@ function buildMaterialList() {
     // pre-create entries in material list for each type
     materials.push({
       hsv: rgb2hsv(0, 0, 0),
-      hsvThreshold: getHSVThreshold(rgb2hsv(0, 0, 0))
+      hsvThreshold: new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
     });
   }
   //<li><div class="materialType">Wood</div><div class="colorSample"><button id="sample1" onclick="toggleSample()">Start sampling</button></div><div class="samplePreview"></div></li>
@@ -65,6 +66,12 @@ function calibrate() {
 }
 
 function getHSVThreshold(hsv) {
+  let _minH = Infinity,
+    _maxH = 0,
+    _minS = Infinity,
+    _maxS = 0,
+    _minV = Infinity,
+    _maxV = 0;
   _minH = Math.min(_minH, Math.max(0, Math.min(360, hsv[0]-5)));
   _maxH = Math.max(_maxH, Math.max(0, Math.min(360, hsv[0]+5)));
   _minS = Math.min(_minS, Math.max(0, Math.min(1, hsv[1]-0.05)));
@@ -95,30 +102,31 @@ function offsetY(evt, target) {
   return (offset = evt.offsetY) != null ? offset : evt.pageY - target.offset().top;
 }
 
-function toggleSample(idx) {
+function setSliders() {
+  hueSlider = $('#hue-slider'),
+    satSlider = $('#saturation-slider'),
+    valSlider = $('#value-slider');
 
+  hsvt = materials[materialIdx].hsvThreshold;
+  hueSlider.rangeSlider("min", hsvt.minH);
+  hueSlider.rangeSlider("max", hsvt.maxH);
+  satSlider.rangeSlider("min", hsvt.minS*100);
+  satSlider.rangeSlider("max", hsvt.maxS*100);
+  valSlider.rangeSlider("min", hsvt.minV*100);
+  valSlider.rangeSlider("max", hsvt.maxV*100);
+}
+
+
+function toggleSample(idx) {
   if (idx) {
-    console.log("toggle " + idx);
-    materialIdx = idx-1;
+    materialIdx = idx - 1;
+    setSliders();
     sampling = true;
     if (!canvas1.classList.contains("sampling")) {
       canvas1.classList.add('sampling');
     } else {
       canvas1.classList.remove('sampling');
-      _minH = Infinity,
-        _maxH = 0,
-        _minS = Infinity,
-        _maxS = 0,
-        _minV = Infinity,
-        _maxV = 0;
     }
-  } else {
-    _minH = Infinity,
-    _maxH = 0,
-    _minS = Infinity,
-    _maxS = 0,
-    _minV = Infinity,
-    _maxV = 0;
   }
 }
 
@@ -311,15 +319,6 @@ $(function () {
       hsvThreshold: threshold
     };
     document.getElementById('samplePreview' + materialIdx).style = "background-color:" + rgbToHex(p[0], p[1], p[2]);
-
-    function setSliders() {
-      hueSlider.rangeSlider("min", _minH);
-      hueSlider.rangeSlider("max", _maxH);
-      satSlider.rangeSlider("min", _minS*100);
-      satSlider.rangeSlider("max", _maxS*100);
-      valSlider.rangeSlider("min", _minV*100);
-      valSlider.rangeSlider("max", _maxV*100);
-    }
 
     setTimeout(setSliders, 50);
     setSliders();
