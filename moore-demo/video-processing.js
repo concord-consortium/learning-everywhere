@@ -229,21 +229,9 @@ $(function () {
     }
   }
 
-  process = function() {
-    var imgData, data, len, i, mask,
-        r, g, b,
-        inRange, image2, erodedImg,
-        points, p;
-
-    ctx1.drawImage(video, 0, 0, videoWidth, videoHeight);
-
-    imgData = ctx1.getImageData(0, 0, videoWidth, videoHeight);
-    data = imgData.data;
-
-    // make a mask for each material
-    for (let m = 0; m < materials.length; m++) {
-      mask = new CV.Image(videoWidth, videoHeight);
-      len = data.length;
+  getMask = function (imageData, hsvThreshold) {
+    let mask = new CV.Image(videoWidth, videoHeight);
+      len = imageData.length;
       i = 0;
 
       // filter pixels to HSV thresholds
@@ -252,10 +240,10 @@ $(function () {
       // be drawn in the canvas just before we draw it, but CV.js uses this
       // simpler array for fastert data processing
       while (i < len) {
-        r = data[i];
-        g = data[i + 1];
-        b = data[i + 2];
-        inRange = materials[m].hsvThreshold.testPixel(r, g, b);
+        r = imageData[i];
+        g = imageData[i + 1];
+        b = imageData[i + 2];
+        inRange = hsvThreshold.testPixel(r, g, b);
         if (inRange) {
           mask.data.push(255);
         } else {
@@ -264,12 +252,8 @@ $(function () {
         i += 4;
       }
 
-      // draw filtered images to canvas 2
-      //image2 = createDrawableImage(mask, canvas2.getContext('2d').getImageData(0, 0, videoWidth, videoHeight));
-      //ctx2.putImageData(image2, 0, 0);
-
       // erode-dilate several times to remove imperfections
-      erodedImg = new CV.Image();
+      let erodedImg = new CV.Image();
       CV.erode(mask, erodedImg);
       CV.dilate(erodedImg, mask);
 
@@ -279,10 +263,24 @@ $(function () {
         CV.erode(mask, erodedImg);
         CV.erode(erodedImg, mask);
       }
+    return mask;
+  }
 
-      // draw image to canvas 2
-      image2 = createDrawableImage(mask, ctx2.getImageData(0, 0, videoWidth, videoHeight));
-      ctx2.putImageData(image2, 0, 0);
+  process = function() {
+    var imgData, data, len, i,
+        r, g, b,
+        inRange, image2,
+        points, p;
+
+    ctx1.drawImage(video, 0, 0, videoWidth, videoHeight);
+
+    imgData = ctx1.getImageData(0, 0, videoWidth, videoHeight);
+    data = imgData.data;
+
+    // make a mask for each material
+    for (let m = 0; m < materials.length; m++) {
+      let mask = getMask(data, materials[m].hsvThreshold);
+      materials[m].mask = mask;
 
       // find contours and draw to canvas 3
       let contours = CV.findContours(mask);
@@ -298,8 +296,12 @@ $(function () {
           contours[i] = CV.convexHull(contours[i]);
         }
       }
-      if (materials) materials[m].contours = contours;
+      materials[m].contours = contours;
     }
+
+    // draw filtered images to canvas 2
+    image2 = createDrawableImage(materials[materialIdx].mask, ctx2.getImageData(0, 0, videoWidth, videoHeight));
+    ctx2.putImageData(image2, 0, 0);
 
     for (i in materials[materialIdx].contours) {
 
