@@ -2,7 +2,7 @@ var updateVideo = true,
     calibrationMode = false,
     sampling = false,
     videoUpdateTime = 200,
-    modelUpdateTime = 30000,
+    modelUpdateTime = 3000,
     capture,
     process,
     updateModel,
@@ -75,10 +75,6 @@ function buildMaterialList() {
       hsvThreshold: new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
     });
   }
-  //<li><div class="materialType">Wood</div><div class="colorSample"><button id="sample1" onclick="toggleSample()">Start sampling</button></div><div class="samplePreview"></div></li>
-  //<li><div class="materialType">Metal</div><div class="colorSample"><button id="sample2" onclick="toggleSample()">Start sampling</button></div><div class="samplePreview"></div></li>
-  //<li><div class="materialType">Stone</div><div class="colorSample"><button id="sample3" onclick="toggleSample()">Start sampling</button></div><div class="samplePreview"></div></li>
-  //<li><div class="materialType">Fiberglass</div><div class="colorSample"><button id="sample4" onclick="toggleSample()">Start sampling</button></div><div class="samplePreview"></div></li>
 }
 
 function calibrate() {
@@ -91,6 +87,11 @@ function calibrate() {
     calibrationMode = false;
     setTimeout(process, modelUpdateTime);
   }
+}
+function refreshObstacles() {
+  console.log("refresh!");
+  console.log(window.interactiveController);
+  updateModel();
 }
 
 function getHSVThreshold(hsv) {
@@ -276,11 +277,14 @@ $(function () {
 
     imgData = ctx1.getImageData(0, 0, videoWidth, videoHeight);
     data = imgData.data;
+    let calibrationMask;
 
-    // make a mask for each material
+    // Find mask for each material
     for (let m = 0; m < materials.length; m++) {
       let mask = getMask(data, materials[m].hsvThreshold);
-      materials[m].mask = mask;
+      if (calibrationMode && m === materialIdx) {
+        calibrationMask = mask;
+      }
 
       // find contours and draw to canvas 3
       let contours = CV.findContours(mask);
@@ -298,33 +302,31 @@ $(function () {
       }
       materials[m].contours = contours;
     }
+    if (calibrationMode) {
+      // draw filtered images to canvas 2
+      image2 = createDrawableImage(calibrationMask, ctx2.getImageData(0, 0, videoWidth, videoHeight));
+      ctx2.putImageData(image2, 0, 0);
 
-    // draw filtered images to canvas 2
-    image2 = createDrawableImage(materials[materialIdx].mask, ctx2.getImageData(0, 0, videoWidth, videoHeight));
-    ctx2.putImageData(image2, 0, 0);
+      for (i in materials[materialIdx].contours) {
 
-    for (i in materials[materialIdx].contours) {
+        points = materials[materialIdx].contours[i];
 
-      points = materials[materialIdx].contours[i];
+        if (points && points.length) {
+          ctx2.beginPath();
+          ctx2.moveTo(points[0].x, points[0].y);
+          for (p = 1; p < points.length; p++) {
+            ctx2.lineTo(points[p].x, points[p].y);
+          }
+          ctx2.closePath();
+          ctx2.lineWidth = 3;
+          ctx2.strokeStyle = "#2ba6cb";
 
-      if (points && points.length) {
-        ctx2.beginPath();
-        ctx2.moveTo(points[0].x, points[0].y);
-        for (p = 1; p < points.length; p++) {
-          ctx2.lineTo(points[p].x, points[p].y);
+          ctx2.stroke();
         }
-        ctx2.closePath();
-        ctx2.lineWidth = 3;
-        ctx2.strokeStyle = "#2ba6cb";
-
-        ctx2.stroke();
       }
     }
     if (!calibrationMode) {
-      for (let i = 0; i < materials.length; i++) {
-        materialIdx = i;
-        updateModel();
-      }
+      if (window.interactiveController.getModel().isStopped()) updateModel();
       setTimeout(process, modelUpdateTime);
     }
   }
@@ -368,54 +370,51 @@ $(function () {
 showShapes = true
 
 updateModel = function () {
-  let props = materials[materialIdx].properties;
-  let contours = materials[materialIdx].contours;
-
-  if (!contours.length) {
-    return;
-  }
-  var numObstacles = contours.length,
-      numParts = script.getNumberOfParts(),
-      contour, x, y, i, j;
-
-  for (i = numParts-1; i > 0; i--) {
-    if (script.getPart(i).thermal_conductivity == 0) {
-      script.removePart(i);
-    } else {
-      foundGlass = true;
-    }
+  numParts = script.getNumberOfParts();
+  for (let i = numParts - 1; i > 0; i--) {
+    script.removePart(i);
   }
 
-  for (i = 0, ii = contours.length; i<ii; i++) {
-    contour = contours[i];
-    vertices = "";
-    for (j = 0, jj = contour.length; j<jj; j++) {
-      if (!contour[j]) continue;
-      x = contour[j].x * 9.6/videoWidth;
-      y = contour[j].y * 7.2/videoHeight;
-      x = Math.min(x, 9.4);
-      y = Math.min(y, 7.1);
-      x = Math.max(x, 0.3);
-      y = Math.max(y, 0.3);
-      vertices += x + ", " + y + ", ";
-    }
-    vertices = vertices.slice(0,-2);
+  for (let m = 0; m < materials.length; m++) {
+    let props = materials[m].properties;
+    let contours = materials[m].contours;
 
-    // add a new shape
-    script.addPart(
-      {
-        "shapeType": "polygon",
-        "x": 0,
-        "y": 0,
-        "temperature": props.temperature,
-        "constant_temperature": props.constant_temperature,
-        "reflection": props.reflection,
-        "absorption": props.absorption,
-        "filled": false,
-        "visible": showShapes,
-        "thermal_conductivity": props.thermal_conductivity,
-        "specific_heat": props.specific_heat,
-        "vertices": vertices
-      })
+    if (!contours.length) {
+      return;
+    }
+    let contour, x, y, i, j;
+
+    for (i = 0, ii = contours.length; i < ii; i++) {
+      contour = contours[i];
+      vertices = "";
+      for (j = 0, jj = contour.length; j < jj; j++) {
+        if (!contour[j]) continue;
+        x = contour[j].x * 9.6 / videoWidth;
+        y = contour[j].y * 7.2 / videoHeight;
+        x = Math.min(x, 9.4);
+        y = Math.min(y, 7.1);
+        x = Math.max(x, 0.3);
+        y = Math.max(y, 0.3);
+        vertices += x + ", " + y + ", ";
+      }
+      vertices = vertices.slice(0, -2);
+
+      // add a new shape
+      script.addPart(
+        {
+          "shapeType": "polygon",
+          "x": 0,
+          "y": 0,
+          "temperature": props.temperature,
+          "constant_temperature": props.constant_temperature,
+          "reflection": props.reflection,
+          "absorption": props.absorption,
+          "filled": false,
+          "visible": showShapes,
+          "thermal_conductivity": props.thermal_conductivity,
+          "specific_heat": props.specific_heat,
+          "vertices": vertices
+        })
+    }
   }
 }
