@@ -28,6 +28,11 @@ header {
 .e2d-part-shape-outline {
   stroke: rgba(0,0,0,0);
 }
+.control-buttons{
+  position: absolute;
+  top:0px;
+  left:40px;
+}
 button {
   background: #3498db;
   background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
@@ -40,8 +45,8 @@ button {
   border-radius: 28px;
   font-family: Arial;
   color: #ffffff;
-  font-size: 17px;
-  padding: 8px 25px 8px 25px;
+  font-size: 14px;
+  padding:2px 8px;
   text-decoration: none;
 }
 

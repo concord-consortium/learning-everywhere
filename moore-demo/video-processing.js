@@ -149,6 +149,7 @@ function toggleSample(idx) {
     materialIdx = idx - 1;
     setSliders();
     sampling = true;
+    document.getElementById("currentSelectedMaterial").innerText= materials[materialIdx].name;
     if (!canvas1.classList.contains("sampling")) {
       canvas1.classList.add('sampling');
     } else {

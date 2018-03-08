@@ -6,20 +6,22 @@ feeds the processed data to a [Lab](https://github.com/concord-consortium/lab) E
 
 # Usage
 
-Install OpenCV. Use node 0.10.20
+# Hardware
+You will need an external web cam, ideally with manufacturer software installed to enable simple zoom / pan to adjust the viewport of the camera.
 
-`npm install`
+# Software
+Ensure that Python is installed, then open a terminal to the current directory
 
-If npm complains that it can't find opencv.pc, you will need to set the
-PKG_CONFIG_PATH variable to the location of folder containing opencv.pc.
+`cd moore-demo`
+`python -m SimpleHTTPServer`
 
-`$ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig`
+View the demo by navigating to `http://localhost:8000/
 
-You can add this to ~/.bashprofile
+You may be prompted for permissions the first time you visit the page to allow the application to access the web cam.
 
-Even after this, on my machine (OS X 10.6.8) using node 0.10.20 I get an
-error that cb() is never called, but this doesn't seem to affect the application.
-
-`coffee app.coffee`
-
-Open http://localhost:9999/
+# Simulation Usage
+On loading the simulation, click on `Calibrate Video` to open the window to enable calibration.
+![Initial layout](initial_layout.png)
+Once calibrated, click `Update obstacles` to update the detection of each type of material.
+![Calibration](calibration.png)
+Once finished calibrating, click `Update Obstacles` before running the simulation.
