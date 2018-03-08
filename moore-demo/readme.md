@@ -12,16 +12,22 @@ You will need an external web cam, ideally with manufacturer software installed 
 # Software
 Ensure that Python is installed, then open a terminal to the current directory
 
-`cd moore-demo`
-`python -m SimpleHTTPServer`
+```
+cd moore-demo
+python -m SimpleHTTPServer
+```
 
-View the demo by navigating to `http://localhost:8000/
+View the demo by navigating to `http://localhost:8000/`
 
 You may be prompted for permissions the first time you visit the page to allow the application to access the web cam.
 
 # Simulation Usage
 On loading the simulation, click on `Calibrate Video` to open the window to enable calibration.
+
 ![Initial layout](initial_layout.png)
+
 Once calibrated, click `Update obstacles` to update the detection of each type of material.
+
 ![Calibration](calibration.png)
+
 Once finished calibrating, click `Update Obstacles` before running the simulation.
