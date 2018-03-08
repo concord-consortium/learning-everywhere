@@ -27,6 +27,8 @@ On loading the simulation, click on `Calibrate Video` to open the window to enab
 ![Initial layout](initial_layout.png)
 
 Once calibrated, click `Update obstacles` to update the detection of each type of material.
+Click `Sample` next to each material, then click on the corresponding colored area in the simulation preview window.
+Adjust the automatic detection using the sliders to ensure the selected area matches the color area.
 
 ![Calibration](calibration.png)
 
