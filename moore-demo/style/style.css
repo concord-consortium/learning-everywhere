@@ -71,6 +71,7 @@ button.active {
   left: 5000px;
   background: white;
   z-index: 1000;
+  width:100%;
 }
 
 #calibrations.show {

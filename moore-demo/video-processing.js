@@ -19,6 +19,17 @@ var updateVideo = true,
 
 var defaultHSV = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
 
+
+function updateMaterialsFromStoredValues() {
+  let mats = window.sessionStorage.getItem('materials');
+  let materialDefinitions = {}
+  if (mats) {
+    materialDefinitions = JSON.parse(mats);
+    console.log(materialDefinitions);
+  }
+  return materialDefinitions;
+}
+
 function buildMaterialList() {
   let materialNames = ["Wood", "Stone", "Metal"];
   let materialDefinitions = [{
@@ -47,7 +58,9 @@ function buildMaterialList() {
     "thermal_conductivity": 40,
     "specific_heat": 450,
     "density": 7900
-  }];
+    }];
+  let storedMaterials = updateMaterialsFromStoredValues();
+
   for (let i = 0; i < materialNames.length; i++) {
     let materialItem = document.createElement('li');
     document.getElementById('materialList').appendChild(materialItem);
@@ -71,8 +84,9 @@ function buildMaterialList() {
     materials.push({
       name: materialNames[i],
       properties: materialDefinitions[i],
-      hsv: rgb2hsv(0, 0, 0),
-      hsvThreshold: new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
+      hsv: storedMaterials && storedMaterials[i].hsv ? storedMaterials[i].hsv : rgb2hsv(0, 0, 0),
+      hex: storedMaterials && storedMaterials[i].hex ? storedMaterials[i].hex : '#000000',
+      hsvThreshold: storedMaterials && storedMaterials[i].hsv ? getHSVThreshold(storedMaterials[i].hsv) : new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
     });
   }
 }
@@ -85,6 +99,7 @@ function calibrate() {
   } else {
     videoUpdateTime = 200;
     calibrationMode = false;
+    updateModel();
     setTimeout(process, modelUpdateTime);
   }
 }
@@ -186,6 +201,7 @@ $(function () {
   satSlider.rangeSlider({bounds: {min: 0, max: 100}, defaultValues: {min: minS*100, max: maxS*100}});
   valSlider.rangeSlider({bounds: {min: 0, max: 100}, defaultValues: {min: minV*100, max: maxV*100}});
 
+  // when sliers change, update the currently-selected material values
   $('#hue-slider, #saturation-slider, #value-slider').on("valuesChanging", function(){
     minH = $("#hue-slider").rangeSlider("min");
     maxH = $("#hue-slider").rangeSlider("max");
@@ -197,7 +213,12 @@ $(function () {
     materials[materialIdx].hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
     //hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
   });
+  for (let m = 0; m < materials.length; m++){
+    document.getElementById('samplePreview' + m).style = "background-color:" + materials[m].hex;
 
+    setTimeout(setSliders, 50);
+    setSliders();
+  }
   // request video
   navigator.getMedia = (navigator.getUserMedia ||
                          navigator.webkitGetUserMedia ||
@@ -355,7 +376,9 @@ $(function () {
     hsv = rgb2hsv(p[0], p[1], p[2]);
     let threshold = getHSVThreshold(hsv);//new HSVThreshold(_minH, _maxH, _minS, _maxS, _minV, _maxV);
     materials[materialIdx].hsv = hsv;
+    materials[materialIdx].hex = rgbToHex(p[0], p[1], p[2]);
     materials[materialIdx].hsvThreshold = threshold;
+    window.sessionStorage.setItem('materials', JSON.stringify(materials));
 
     document.getElementById('samplePreview' + materialIdx).style = "background-color:" + rgbToHex(p[0], p[1], p[2]);
 
