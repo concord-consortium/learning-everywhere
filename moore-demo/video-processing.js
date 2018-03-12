@@ -19,13 +19,11 @@ var updateVideo = true,
 
 var defaultHSV = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
 
-
 function updateMaterialsFromStoredValues() {
   let mats = window.sessionStorage.getItem('materials');
   let materialDefinitions = {}
   if (mats) {
     materialDefinitions = JSON.parse(mats);
-    console.log(materialDefinitions);
   }
   return materialDefinitions;
 }
@@ -84,9 +82,9 @@ function buildMaterialList() {
     materials.push({
       name: materialNames[i],
       properties: materialDefinitions[i],
-      hsv: storedMaterials && storedMaterials[i].hsv ? storedMaterials[i].hsv : rgb2hsv(0, 0, 0),
-      hex: storedMaterials && storedMaterials[i].hex ? storedMaterials[i].hex : '#000000',
-      hsvThreshold: storedMaterials && storedMaterials[i].hsv ? getHSVThreshold(storedMaterials[i].hsv) : new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
+      hsv: storedMaterials && storedMaterials[i] && storedMaterials[i].hsv ? storedMaterials[i].hsv : rgb2hsv(0, 0, 0),
+      hex: storedMaterials && storedMaterials[i] && storedMaterials[i].hex ? storedMaterials[i].hex : '#000000',
+      hsvThreshold: storedMaterials && storedMaterials[i] && storedMaterials[i].hsv ? getHSVThreshold(storedMaterials[i].hsv) : new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
     });
   }
 }
@@ -105,33 +103,6 @@ function calibrate() {
 }
 function refreshObstacles() {
   updateModel();
-}
-
-function getHSVThreshold(hsv) {
-  let _minH = Infinity,
-    _maxH = 0,
-    _minS = Infinity,
-    _maxS = 0,
-    _minV = Infinity,
-    _maxV = 0;
-  _minH = Math.min(_minH, Math.max(0, Math.min(360, hsv[0]-10)));
-  _maxH = Math.max(_maxH, Math.max(0, Math.min(360, hsv[0]+10)));
-  _minS = Math.min(_minS, Math.max(0, Math.min(1, hsv[1]-0.1)));
-  _maxS = Math.max(_maxS, Math.max(0, Math.min(1, hsv[1]+0.1)));
-  _minV = Math.min(_minV, Math.max(0, Math.min(1, hsv[2]-0.1)));
-  _maxV = Math.max(_maxV, Math.max(0, Math.min(1, hsv[2]+0.1)));
-
-  t = new HSVThreshold(_minH, _maxH, _minS, _maxS, _minV, _maxV);
-  return t;
-}
-
-function componentToHex(c) {
-  var hex = c.toString(16);
-  return hex.length == 1 ? "0" + hex : hex;
-}
-
-function rgbToHex(r, g, b) {
-  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
 function offsetX(evt, target) {
@@ -193,9 +164,6 @@ $(function () {
     minV = 0,
     maxV = 0.3;
 
-  materials[materialIdx].hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
-  //hsvThreshold = materials[materialIdx].hsvThreshold;
-
   // set up sliders
   hueSlider.rangeSlider({bounds: {min: 0, max: 360}, defaultValues: {min: minH, max: maxH}});
   satSlider.rangeSlider({bounds: {min: 0, max: 100}, defaultValues: {min: minS*100, max: maxS*100}});
@@ -211,7 +179,6 @@ $(function () {
     maxV = $("#value-slider").rangeSlider("max") / 100;
 
     materials[materialIdx].hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
-    //hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
   });
   for (let m = 0; m < materials.length; m++){
     document.getElementById('samplePreview' + m).style = "background-color:" + materials[m].hex;
@@ -401,7 +368,7 @@ updateModel = function () {
     let props = materials[m].properties;
     let contours = materials[m].contours;
 
-    if (!contours.length) {
+    if (!contours || !contours.length) {
       return;
     }
     let contour, x, y, i, j;
