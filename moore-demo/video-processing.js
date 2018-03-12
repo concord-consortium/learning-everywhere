@@ -138,9 +138,14 @@ function toggleSample(idx) {
     document.getElementById("currentSelectedMaterial").innerText= materials[materialIdx].name;
     if (!canvas1.classList.contains("sampling")) {
       canvas1.classList.add('sampling');
-    } else {
-      canvas1.classList.remove('sampling');
     }
+  } else {
+    materials[materialIdx].hsv = rgb2hsv(0, 0, 0);
+    materials[materialIdx].hex = '#000000';
+    materials[materialIdx].hsvThreshold = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV);
+    document.getElementById('samplePreview' + materialIdx).style = "background-color:" + materials[materialIdx].hex;
+    setTimeout(setSliders, 50);
+    setSliders();
   }
 }
 

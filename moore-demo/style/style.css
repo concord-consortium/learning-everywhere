@@ -1,5 +1,6 @@
 body {
-  background-color: white;
+  background-color: black;
+  color: white;
   font-family: Arial, Helvetica, sans-serif;
 }
 @font-face {
@@ -69,7 +70,7 @@ button.active {
   position: absolute;
   top: 0px;
   left: 5000px;
-  background: white;
+  background: black;
   z-index: 1000;
   width:100%;
 }
@@ -80,7 +81,6 @@ button.active {
 
 #calibrations h3 {
   text-align: center;
-  color: #777;
   margin-top: 10px;
 }
 #calibrations canvas {
@@ -102,7 +102,6 @@ button.active {
   padding: 5px;
   padding-bottom: 25px;
   font-size: 0.875em;
-  color: #4d4d4d;
   cursor: pointer;
   display: block;
   font-weight: bold;
@@ -179,4 +178,8 @@ li button{
 
 #canvas1.sampling{
   cursor:crosshair;
+}
+.resetSamplingContainer{
+  margin-top:6px;
+  margin-bottom:12px;
 }
