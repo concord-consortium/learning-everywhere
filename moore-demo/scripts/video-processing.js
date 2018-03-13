@@ -21,42 +21,15 @@ var defaultHSV = new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
 
 function updateMaterialsFromStoredValues() {
   let mats = window.sessionStorage.getItem('materials');
-  let materialDefinitions = {}
+  let materialConfig = {}
   if (mats) {
-    materialDefinitions = JSON.parse(mats);
+    materialConfig = JSON.parse(mats);
   }
-  return materialDefinitions;
+  return materialConfig;
 }
 
 function buildMaterialList() {
-  let materialNames = ["Wood", "Stone", "Metal"];
-  let materialDefinitions = [{
-    "temperature": 0,
-    "constant_temperature": false,
-    "reflection": 0,
-    "absorption": 1,
-    "thermal_conductivity": 0.12,
-    "specific_heat": 1400,
-    "density": 500
-  },
-  {
-    "temperature": 0,
-    "constant_temperature": false,
-    "reflection": 0,
-    "absorption": 1,
-    "thermal_conductivity": 1.7,
-    "specific_heat": 750,
-    "density": 2400
-  },
-  {
-    "temperature": 0,
-    "constant_temperature": false,
-    "reflection": 0,
-    "absorption": 1,
-    "thermal_conductivity": 40,
-    "specific_heat": 450,
-    "density": 7900
-    }];
+  let materialNames = Object.keys(materialDefinitions);
   let storedMaterials = updateMaterialsFromStoredValues();
 
   for (let i = 0; i < materialNames.length; i++) {
@@ -81,7 +54,7 @@ function buildMaterialList() {
     // pre-create entries in material list for each type
     materials.push({
       name: materialNames[i],
-      properties: materialDefinitions[i],
+      properties: materialDefinitions[materialNames[i]],
       hsv: storedMaterials && storedMaterials[i] && storedMaterials[i].hsv ? storedMaterials[i].hsv : rgb2hsv(0, 0, 0),
       hex: storedMaterials && storedMaterials[i] && storedMaterials[i].hex ? storedMaterials[i].hex : '#000000',
       hsvThreshold: storedMaterials && storedMaterials[i] && storedMaterials[i].hsv ? getHSVThreshold(storedMaterials[i].hsv) : new HSVThreshold(minH, maxH, minS, maxS, minV, maxV)
