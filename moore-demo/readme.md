@@ -5,6 +5,8 @@ data (from WebRTC) to OpenCV running on the local server, and then
 feeds the processed data to a [Lab](https://github.com/concord-consortium/lab) Energy2D model.
 
 # Usage
+To demo, either clone this branch and run locally (as described below) or navigate to `https://s3.amazonaws.com/models-resources/moore-demo/index.html` for a hosted version.
+Deployment to S3 is not automatic - updated software must be uploaded manually for now.
 
 # Hardware
 You will need an external web cam, ideally with manufacturer software installed to enable simple zoom / pan to adjust the viewport of the camera.
