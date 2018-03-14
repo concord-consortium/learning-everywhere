@@ -184,3 +184,29 @@ li button{
   margin-top:6px;
   margin-bottom:12px;
 }
+
+.lab-interactive-container.dark {
+  background-color: #333;
+  background-image:none;
+
+}
+
+.dark #graph text{
+  color:white;
+  stroke: white;
+}
+
+.dark .graph .x line{
+  stroke: #ccc;
+}
+.dark .graph .y line{
+  stroke: #ccc;
+}
+
+.dark .graph .background{
+  background: #555;
+}
+
+label{
+  color:#333;
+}

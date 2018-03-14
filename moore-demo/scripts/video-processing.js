@@ -142,6 +142,21 @@ $(function () {
     minV = 0,
     maxV = 0.3;
 
+  $('#toggleDarkTheme').click(function() {
+    $("#interactive-container").toggleClass("dark", this.checked);
+    if (this.checked) {
+      window.interactiveController.getComponent("graph").setAttributes({"dataColors": [
+        "#f05555",
+        "#2cf02c"
+      ]});
+    } else {
+      window.interactiveController.getComponent("graph").setAttributes({"dataColors": [
+        "#a00000",
+        "#2ca000"
+      ]});
+    }
+  });
+
   // set up sliders
   hueSlider.rangeSlider({bounds: {min: 0, max: 360}, defaultValues: {min: minH, max: maxH}});
   satSlider.rangeSlider({bounds: {min: 0, max: 100}, defaultValues: {min: minS*100, max: maxS*100}});
